@@ -11,7 +11,7 @@ File name: `r file.setup`
 
 Strains:
 ```{r echo=FALSE}
-options(width = 200)
+options(width = 110)
 strains=readRDS("~/strains.rds")
 strains
 ```
