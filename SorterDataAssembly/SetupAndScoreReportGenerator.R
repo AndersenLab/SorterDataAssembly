@@ -22,6 +22,29 @@ plateno <- function(string)
 }
 
 
+#Extract the metadata info
+info = function(filePath){
+    splitfp = strsplit(filePath,"/")
+    dirName = splitfp[[1]][(length(splitfp[[1]])-1)]
+    
+    date = strsplit(dirName,"_")[[1]][1]
+    
+    details = strsplit(dirName,"_")[[1]][2]
+    
+    experiment = strsplit(details,"[0-9]+")[[1]][1]
+    round = strsplit(details,"(?i)[a-z]+")[[1]][2]
+    assay = strsplit(details,"[0-9]+")[[1]][2]
+    
+    split = strsplit(splitfp[[1]][(length(splitfp[[1]]))],"_")[[1]]
+    drug = strsplit(split[2],"\\.")[[1]][1]
+    plate = strsplit(split[1],"p")[[1]][2]
+    
+    frame = data.frame(date,experiment,round,assay)
+    
+    return(frame)
+}
+
+
 
 ##########################For simplicity:
 
@@ -43,6 +66,8 @@ dir.existing = "~/SorterDataAssembly"
 dir.new = "Reports"
 dir.create(file.path(dir.existing,dir.new))
 dir.report<-file.path(dir.existing,dir.new)
+
+dir.create(file.path(dir.existing,"results"))
 
 ##########################
 
@@ -66,50 +91,6 @@ setwd(dir.root)
 
 #Source the data to access the enclosed functions
 source(file.path(dir.root,file.fxns))
-
-
-
-
-
-
-
-############################
-############################
-############################
-############################
-############################
-
-#Remove this function definition if it works
-
-removeWells = function(proc, badwells) {
-    sp.bw <- str_split(badwells, "", 3)
-    for (i in seq(1, length(sp.bw))) {
-        row <- sp.bw[[i]][2]
-        col <- sp.bw[[i]][3]
-        proc[which(proc$row == row & proc$col == col),-(1:3)] <- NA
-    }
-    return(proc)
-}
-
-
-
-############################
-############################
-############################
-############################
-############################
-
-
-
-
-
-
-
-
-
-
-
-
 
 #Get the user's plot style guide file 
 # writeLines(paste0("You should have a presentation file to help define your plot style.
@@ -185,9 +166,6 @@ score.filelist<-dir(pattern="*.txt")
 score.plate<-llply(score.filelist,function(x){plateno(x)})
 score.df<-llply(score.filelist,function(x){readSorter(x)})
 
-
-
-
 #Convert the sorter data to a data frame
 sortertoDF <- function(file, tofmin=20, tofmax=2000, extmin=20, extmax=5000) {
     plate <- readSorter(file, tofmin, tofmax, extmin, extmax)
@@ -208,47 +186,10 @@ sortertoDF <- function(file, tofmin=20, tofmax=2000, extmin=20, extmax=5000) {
 #Create a list of scoring results with bubbles sccounted for with the SVM
 score.modplate<-llply(score.filelist,function(x){sortertoDF(x)})
 
-################Not sure what this chunk does#########################
+
 setup.filelist<-as.list(setup.filelist)
 names(setup.filelist)<-setup.plate
 names(setup.df)<-setup.plate
-#names(score.filelist)<-score.plate
-#names(score.df)<-score.plate
-#names(score.modplate)<-score.plate
-
-
-
-#CHECKS FOR DUPLICATE PLATES (Example: 08a and 08b)
-########This may need to be changed
-for(i in 1:(length(setup.plate)-1))
-{
-    if(setup.plate[[i]]==setup.plate[[i+1]])
-    {
-        name1<-setup.filelist[[i]]
-        name2<-setup.filelist[[i+1]]
-        setup.filelist[[i+1]]<-NULL
-        setup.df[[i]]<-rbind(setup.df[[i]],setup.df[[i+1]])
-        setup.df[[i+1]]<-NULL
-        print(paste0("Setup plates ",name1," and ",name2," have been combined using rbind."))
-    }
-}
-
-
-# for(i in 1:(length(score.plate)-1))
-# {
-#     if(score.plate[[i]]==score.plate[[i+1]])
-#     {
-#         name1<-score.filelist[[i]]
-#         name2<-score.filelist[[i+1]]
-#         score.filelist[[i+1]]<-NULL
-#         score.df[[i]]<-rbind(score.df[[i]],score.df[[i+1]])
-#         score.df[[i+1]]<-NULL
-#         score.modplate[[i]]<-rbind(score.modplate[[i]],score.modplate[[i+1]])
-#         score.modplate[[i+1]]<-NULL
-#         print(paste0("Score plates ",name1," and ",name2," have been combined using rbind."))
-#     }
-# }
-
 
 
 #CHECKS FOR MISSING SCORE PLATES (removes setup plates which do not correspond)
@@ -599,6 +540,24 @@ meltdf <- function(score)
 melted.score.proc<-llply(score.proc,function(x){meltdf(x)})
 
 
+
+
+
+
+
+
+
+
+#Create complete data frame
+score.info = llply(file.path(dir.data,score.filelist), function(x){info(x)})
+for(i in 1:length(score.proc)){
+    score.proc[[i]] = as.data.frame(cbind(score.info[[i]],score.proc[[i]]))
+}
+
+
+
+
+#Print out final reports and assemble final data frames
 for(i in 1:(length(score.plate)))
 {
     file.score<-score.filelist[[i]]
@@ -607,13 +566,16 @@ for(i in 1:(length(score.plate)))
     
     saveRDS(strains,file="~/strains.rds")
     
-    proc<-score.proc[[i]]
-    saveRDS(proc,file="~/proc.rds")
-    
     
     date=Sys.Date()
     date=as.character(format(date,format="%Y%m%d"))
     saveRDS(date,file="~/date.rds")
+    
+    
+    proc<-score.proc[[i]]
+    saveRDS(proc,file="~/proc.rds")
+    fileName = paste0(i,".csv")
+    write.csv(proc,file = file.path(dir.existing,"results",fileName))
     
     
     split<-score.plate[[i]]
@@ -650,3 +612,26 @@ for(i in 1:(length(score.plate)))
     madefiles=c("~/date.rds","~/proc.rds","~/file-score.rds","~/contam.rds","~/plot-score-pop.rds","~/plot-score-red.rds","~/plot-score-tofext.rds","~/strains.rds","~/split.rds")
     file.remove(madefiles)
 } 
+
+
+
+filelist = dir(file.path(dir.existing,"results"), pattern = "[0-9]+.csv")
+
+df = read.csv(file.path(dir.existing,"results",filelist[1]))
+
+for(i in 2:length(filelist)){
+    df = rbind(df, read.csv(file.path(dir.existing,"results",filelist[i])))
+}
+
+splitfp = strsplit(dir.data,"/")
+dirName = splitfp[[1]][(length(splitfp[[1]]))]
+
+details = strsplit(dirName,"_")[[1]][2]
+
+name = paste0(details, "_complete.csv")
+
+write.csv(df, file.path(dir.existing,"results",name))
+
+file.remove(file.path(dir.existing,"results",filelist))
+
+
