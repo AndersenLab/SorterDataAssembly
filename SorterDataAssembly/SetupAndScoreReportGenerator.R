@@ -27,18 +27,22 @@ plateno <- function(string)
 
 
 dir.root = "~/"
-file.fxns = "Dropbox/Biosort/Scripts and functions/ProcessSorterFxns_NU.R"
+file.fxns = "SorterDataAssembly/ProcessSorterFxns_NU_TCS.R"
 file.pres = "SorterDataAssembly/PresentationStyle.Rdata"
-dir.data = "Dropbox/HTA/Results/20140317_GWAS1a"
+dir.data = "Dropbox/HTA/Results/20140318_GWAS1b"
 file.contam = "contamination.R"
 file.strains = "strains.R"
 dir.setup = "setup"
 dir.score = "score"
 
+file.report.setup = "~/SorterDataAssembly/MasterSetupReport.Rmd"
+file.report.score = "~/SorterDataAssembly/MasterScoreReport.Rmd"
 
 
-
-
+dir.existing = "~/SorterDataAssembly"
+dir.new = "Reports"
+dir.create(file.path(dir.existing,dir.new))
+dir.report<-file.path(dir.existing,dir.new)
 
 ##########################
 
@@ -62,6 +66,50 @@ setwd(dir.root)
 
 #Source the data to access the enclosed functions
 source(file.path(dir.root,file.fxns))
+
+
+
+
+
+
+
+############################
+############################
+############################
+############################
+############################
+
+#Remove this function definition if it works
+
+removeWells = function(proc, badwells) {
+    sp.bw <- str_split(badwells, "", 3)
+    for (i in seq(1, length(sp.bw))) {
+        row <- sp.bw[[i]][2]
+        col <- sp.bw[[i]][3]
+        proc[which(proc$row == row & proc$col == col),-(1:3)] <- NA
+    }
+    return(proc)
+}
+
+
+
+############################
+############################
+############################
+############################
+############################
+
+
+
+
+
+
+
+
+
+
+
+
 
 #Get the user's plot style guide file 
 # writeLines(paste0("You should have a presentation file to help define your plot style.
@@ -186,20 +234,20 @@ for(i in 1:(length(setup.plate)-1))
 }
 
 
-for(i in 1:(length(score.plate)-1))
-{
-    if(score.plate[[i]]==score.plate[[i+1]])
-    {
-        name1<-score.filelist[[i]]
-        name2<-score.filelist[[i+1]]
-        score.filelist[[i+1]]<-NULL
-        score.df[[i]]<-rbind(score.df[[i]],score.df[[i+1]])
-        score.df[[i+1]]<-NULL
-        score.modplate[[i]]<-rbind(score.modplate[[i]],score.modplate[[i+1]])
-        score.modplate[[i+1]]<-NULL
-        print(paste0("Score plates ",name1," and ",name2," have been combined using rbind."))
-    }
-}
+# for(i in 1:(length(score.plate)-1))
+# {
+#     if(score.plate[[i]]==score.plate[[i+1]])
+#     {
+#         name1<-score.filelist[[i]]
+#         name2<-score.filelist[[i+1]]
+#         score.filelist[[i+1]]<-NULL
+#         score.df[[i]]<-rbind(score.df[[i]],score.df[[i+1]])
+#         score.df[[i+1]]<-NULL
+#         score.modplate[[i]]<-rbind(score.modplate[[i]],score.modplate[[i+1]])
+#         score.modplate[[i+1]]<-NULL
+#         print(paste0("Score plates ",name1," and ",name2," have been combined using rbind."))
+#     }
+# }
 
 
 
@@ -230,36 +278,33 @@ date=Sys.Date()
 date=as.character(format(date,format="%Y%m%d"))
 saveRDS(date, file="~/date.rds")
 
-writeLines(paste0("Would you like your setup and score reports to be saved in the specified data directory?
-                  This directory is: ",dir.root,dir.data))
-ans <- readline("Please enter y/n: ")
+# writeLines(paste0("Would you like your setup and score reports to be saved in the specified data directory?
+#                   This directory is: ",dir.root,dir.data))
+# ans <- readline("Please enter y/n: ")
+# 
+# if(ans=="y")
+# {
+#     dir.create(file.path(dir.root,dir.data,"Report/"))
+#     dir.report<-file.path(dir.root,dir.data,"Report/")
+# } else
+# {
+#     ans <- readline("Would you like your setup and score reports to be saved in an existing folder?
+#                   Please enter y/n:")
+#     if(ans=="y")
+#     {
+#         dir.report<-readline("Enter the full name of the directory in which you would like to save your reports:")
+#     }
+#     else
+#     {
+#         dir.existing<-readline("Enter the name of the existing directory in which you'd like to create a new folder:")
+#         dir.new<-readline("Enter the name of the folder for your reports which you'd like to create:")
+#         dir.create(file.path(dir.existing,dir.new))
+#         dir.report<-file.path(dir.existing,dir.new)
+#     }
+# }
 
-if(ans=="y")
-{
-    dir.create(file.path(dir.root,dir.data,"Report/"))
-    dir.report<-file.path(dir.root,dir.data,"Report/")
-} else
-{
-    ans <- readline("Would you like your setup and score reports to be saved in an existing folder?
-                  Please enter y/n:")
-    if(ans=="y")
-    {
-        dir.report<-readline("Enter the full name of the directory in which you would like to save your reports:")
-    }
-    else
-    {
-        dir.existing<-readline("Enter the name of the existing directory in which you'd like to create a new folder:")
-        dir.new<-readline("Enter the name of the folder for your reports which you'd like to create:")
-        dir.create(file.path(dir.existing,dir.new))
-        dir.report<-file.path(dir.existing,dir.new)
-    }
-}
 
 
-dir.existing = "~/SorterDataAssembly"
-dir.report = "Reports"
-dir.create(file.path(dir.existing,dir.new))
-dir.report<-file.path(dir.existing,dir.new)
 
 
 
@@ -272,7 +317,6 @@ dir.report<-file.path(dir.existing,dir.new)
 # writeLines("You should have a .Rmd file template for your score reports.
 #            For example: C:/Users/Student.LIU0214/Dropbox/Gina (1)/Practice/031914 score report.Rmd")
 # file.report.score <- readline("Enter the location of the .Rmd file for score report: ")
-
 
 
 
@@ -336,7 +380,6 @@ for(i in 1:(length(setup.plate)))
 
 #added quantiles of minEXT, q05_EXT through q95_EXT, maxEXT
 processPheno <- function(modplate, strains) {
-    require(plyr)
     processed <- ddply(.data=modplate[modplate$call50=="worm",], .variables=c("row", "col"),
                        .fun=function(x){c(n=length(x$TOF),
                                           meanTOF=mean(x$TOF),
@@ -409,6 +452,9 @@ processPheno <- function(modplate, strains) {
 #score.pheno = list of processed score datasets with phenotype information (TOF/EXT quantiles etc)
 #without t(strains), strain matrix won't match up with plate setup
 score.pheno<-llply(score.modplate,function(x){processPheno(x,t(strains))})
+
+
+
 
 
 

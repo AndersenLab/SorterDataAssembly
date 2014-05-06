@@ -1,4 +1,4 @@
-```{r}
+```{r echo=FALSE}
 date=readRDS("~/date.rds")
 plate=readRDS("~/split.rds")
 file.setup=readRDS("~/file-setup.rds")
@@ -10,20 +10,21 @@ File name: `r file.setup`
 
 
 Strains:
-```{r}
+```{r echo=FALSE}
+options(width = 200)
 strains=readRDS("~/strains.rds")
 strains
 ```
 
 Contaminated wells:
-```{r}
+```{r echo=FALSE}
 contam=readRDS("~/contam.rds")
 contam
 ```
 
 
 Number of L4s sorted:
-```{r fig.width=15,fig.height=10}
+```{r echo=FALSE,fig.width=15,fig.height=10}
 plot.setup.sorted=readRDS("~/plot-setup-sorted.rds")
 plot.setup.sorted
 ```
@@ -31,7 +32,7 @@ plot.setup.sorted
 
 
 Population size (factored color):
-```{r fig.width=15,fig.height=10}
+```{r echo=FALSE,fig.width=15,fig.height=10}
 plot.setup.pop=readRDS("~/plot-setup-pop.rds")
 plot.setup.pop
 ```
@@ -41,14 +42,14 @@ plot.setup.pop
 - Bottom left: TOF median
 - Top right: EXT mean
 - Bottom right: EXT median
-```{r fig.width=15,fig.height=10}
+```{r echo=FALSE,fig.width=15,fig.height=10}
 plot.setup.tofext=readRDS("~/plot-setup-tofext.rds")
 plot.setup.tofext
 ```
 
 
 procSetup dataset:
-```{r}
+```{r echo=FALSE}
 setup.proc=readRDS("~/setup-proc.rds")
 setup.proc
 ```

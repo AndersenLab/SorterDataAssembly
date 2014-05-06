@@ -1,4 +1,4 @@
-```{r,echo=TRUE}
+```{r echo=FALSE}
 date=readRDS("~/date.rds")
 plate=readRDS("~/split.rds")
 file.score=readRDS("~/file-score.rds")
@@ -11,20 +11,21 @@ File name: `r file.score`
 
 Strain information:
 ```{r}
+options(width = 200)
 strains=readRDS("~/strains.rds")
 strains
 ```
 
 
 Contaminated wells:
-```{r}
+```{r echo=FALSE}
 contam=readRDS("~/contam.rds")
 contam
 ```
 
 
 Number of worms in each well:
-```{r fig.width=15,fig.height=10}
+```{r echo=FALSE,fig.width=15,fig.height=10}
 plot.score.pop=readRDS("~/plot-score-pop.rds")
 plot.score.pop
 ```
@@ -35,7 +36,7 @@ plot.score.pop
 + Top right: Mean EXT
 + Bottom left: Median TOF
 + Bottom right: Median EXT
-```{r fig.width=15,fig.height=10}
+```{r echo=FALSE,fig.width=15,fig.height=10}
 plot.score.tofext=readRDS("~/plot-score-tofext.rds")
 plot.score.tofext
 ```
@@ -45,7 +46,7 @@ plot.score.tofext
 Red fluorescence (normalized by mean TOF):
 + Top left: Mean red
 + Bottom right: Median red
-```{r fig.width=15,fig.height=10}
+```{r echo=FALSE,fig.width=15,fig.height=10}
 plot.score.red=readRDS("~/plot-score-red.rds")
 plot.score.red
 ```
@@ -53,7 +54,7 @@ plot.score.red
 
 
 Life-stage distribution:
-```{r}
+```{r echo=FALSE}
 plot.score.dist=readRDS("~/plot-score-dist.rds")
 plot.score.dist
 ```
@@ -61,7 +62,7 @@ plot.score.dist
 
 
 Processed dataset:
-```{r}
+```{r echo=FALSE}
 proc=readRDS("~/proc.rds")
 proc
 ```
