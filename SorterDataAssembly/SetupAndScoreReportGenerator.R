@@ -52,7 +52,8 @@ info = function(filePath){
 dir.root = "~/"
 file.fxns = "SorterDataAssembly/ProcessSorterFxns_NU_TCS.R"
 file.pres = "SorterDataAssembly/PresentationStyle.Rdata"
-dir.data = "Dropbox/HTA/Results/20140318_GWAS1b"
+#dir.data = "Dropbox/HTA/Results/20140318_GWAS1b"
+dir.data = "SorterDataAssembly"
 file.contam = "contamination.R"
 file.strains = "strains.R"
 dir.setup = "setup"
@@ -63,7 +64,7 @@ file.report.score = "~/SorterDataAssembly/MasterScoreReport.Rmd"
 
 
 dir.existing = "~/SorterDataAssembly"
-dir.new = "Reports"
+dir.new = "reports"
 dir.create(file.path(dir.existing,dir.new))
 dir.report<-file.path(dir.existing,dir.new)
 
