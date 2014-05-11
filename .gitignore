@@ -1,0 +1,10 @@
+score/
+setup/
+results/
+reports/
+temp/
+
+strains.R
+contamination.R
+.DS_Store
+.Rapp.history
