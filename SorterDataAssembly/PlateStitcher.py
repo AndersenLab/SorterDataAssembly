@@ -38,34 +38,39 @@ if len(duplicates) != 0:
 		mkdir(folderName)
 
 for i in range(0,len(duplicates)):
-	fileCount = 0
-	allData = []
-	tempData = []
-	for j in range(0,len(txtFiles)):
-		if duplicates[i][0] in txtFiles[j]:
-			fileCount += 1
-			fileName = directory + "/" + txtFiles[j]
-			with open(fileName, "r") as f:
-				reader = csv.reader(f, delimiter = "\t")
-				if fileCount == 1:
-					name = nameFile(txtFiles[j])
-					header = reader.next()
-					allData.append(header)
-				for row in reader:
-					if len(row) == len(header):
-						allData.append(row)
-			shutil.move(fileName, folderName)
-	for k in allData:
-		if k == header:
-			allData.remove(k)
-	
-	newFile = open(name, "w+")
-	newFile.write("\t".join(header) + "\n")
+	skip = False
+	for m in range(0,len(txtFiles)):
+		if duplicates[i][0] in txtFiles[m] and "stitched" in txtFiles[m]:
+			skip = True
+	if not skip:
+		fileCount = 0
+		allData = []
+		tempData = []
+		for j in range(0,len(txtFiles)):
+			if duplicates[i][0] in txtFiles[j]:
+				fileCount += 1
+				fileName = directory + "/" + txtFiles[j]
+				with open(fileName, "r") as f:
+					reader = csv.reader(f, delimiter = "\t")
+					if fileCount == 1:
+						name = nameFile(txtFiles[j])
+						header = reader.next()
+						allData.append(header)
+					for row in reader:
+						if len(row) == len(header):
+							allData.append(row)
+				shutil.move(fileName, folderName)
+		for k in allData:
+			if k == header:
+				allData.remove(k)
+		
+		newFile = open(name, "w+")
+		newFile.write("\t".join(header) + "\n")
 
-	for l in allData:
-		newFile.write("\t".join(l) + "\n")
+		for l in allData:
+			newFile.write("\t".join(l) + "\n")
 
-	newFile.close()
+		newFile.close()
 
 
 
