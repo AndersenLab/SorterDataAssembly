@@ -1,7 +1,10 @@
 ```{r echo=FALSE}
-date=readRDS("~/date.rds")
-plate=readRDS("~/split.rds")
-file.score=readRDS("~/file-score.rds")
+#Change this line to match the created temporary directory
+dir = "~/SorterDataAssembly/temp"
+
+date=readRDS(file.path(dir,"date.rds"))
+plate=readRDS(file.path(dir,"split.rds"))
+file.score=readRDS(file.path(dir,"file-score.rds"))
 ```
 
 SCORE Report: `r date` - `r plate`
@@ -10,23 +13,23 @@ File name: `r file.score`
 
 
 Strain information:
-```{r}
+```{r echo = FALSE}
 options(width = 110)
-strains=readRDS("~/strains.rds")
+strains=readRDS(file.path(dir,"strains.rds"))
 strains
 ```
 
 
 Contaminated wells:
 ```{r echo=FALSE}
-contam=readRDS("~/contam.rds")
+contam=readRDS(file.path(dir,"contam.rds"))
 contam
 ```
 
 
 Number of worms in each well:
 ```{r echo=FALSE,fig.width=15,fig.height=10}
-plot.score.pop=readRDS("~/plot-score-pop.rds")
+plot.score.pop=readRDS(file.path(dir,"plot-score-pop.rds"))
 plot.score.pop
 ```
 
@@ -37,7 +40,7 @@ plot.score.pop
 + Bottom left: Median TOF
 + Bottom right: Median EXT
 ```{r echo=FALSE,fig.width=15,fig.height=10}
-plot.score.tofext=readRDS("~/plot-score-tofext.rds")
+plot.score.tofext=readRDS(file.path(dir,"plot-score-tofext.rds"))
 plot.score.tofext
 ```
 
@@ -47,7 +50,7 @@ Red fluorescence (normalized by mean TOF):
 + Top left: Mean red
 + Bottom right: Median red
 ```{r echo=FALSE,fig.width=15,fig.height=10}
-plot.score.red=readRDS("~/plot-score-red.rds")
+plot.score.red=readRDS(file.path(dir,"plot-score-red.rds"))
 plot.score.red
 ```
 
@@ -55,7 +58,7 @@ plot.score.red
 
 Life-stage distribution:
 ```{r echo=FALSE}
-plot.score.dist=readRDS("~/plot-score-dist.rds")
+plot.score.dist=readRDS(file.path(dir,"plot-score-dist.rds"))
 plot.score.dist
 ```
 
@@ -63,7 +66,7 @@ plot.score.dist
 
 Processed dataset:
 ```{r echo=FALSE}
-proc=readRDS("~/proc.rds")
+proc=readRDS(file.path(dir,"proc.rds"))
 proc
 ```
 

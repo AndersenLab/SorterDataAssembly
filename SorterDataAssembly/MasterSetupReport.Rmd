@@ -1,7 +1,10 @@
 ```{r echo=FALSE}
-date=readRDS("~/date.rds")
-plate=readRDS("~/split.rds")
-file.setup=readRDS("~/file-setup.rds")
+#Change this line to match the created temporary directory
+dir = "~/SorterDataAssembly/temp"
+
+date=readRDS(file.path(dir,"date.rds"))
+plate=readRDS(file.path(dir,"split.rds"))
+file.setup=readRDS(file.path(dir,"file-setup.rds"))
 ```
 
 SETUP Report: `r date` - `r plate`
@@ -12,20 +15,20 @@ File name: `r file.setup`
 Strains:
 ```{r echo=FALSE}
 options(width = 110)
-strains=readRDS("~/strains.rds")
+strains=readRDS(file.path(dir,"strains.rds"))
 strains
 ```
 
 Contaminated wells:
 ```{r echo=FALSE}
-contam=readRDS("~/contam.rds")
+contam=readRDS(file.path(dir,"contam.rds"))
 contam
 ```
 
 
 Number of L4s sorted:
 ```{r echo=FALSE,fig.width=15,fig.height=10}
-plot.setup.sorted=readRDS("~/plot-setup-sorted.rds")
+plot.setup.sorted=readRDS(file.path(dir,"plot-setup-sorted.rds"))
 plot.setup.sorted
 ```
 
@@ -33,7 +36,7 @@ plot.setup.sorted
 
 Population size (factored color):
 ```{r echo=FALSE,fig.width=15,fig.height=10}
-plot.setup.pop=readRDS("~/plot-setup-pop.rds")
+plot.setup.pop=readRDS(file.path(dir,"plot-setup-pop.rds"))
 plot.setup.pop
 ```
 
@@ -43,13 +46,13 @@ plot.setup.pop
 - Top right: EXT mean
 - Bottom right: EXT median
 ```{r echo=FALSE,fig.width=15,fig.height=10}
-plot.setup.tofext=readRDS("~/plot-setup-tofext.rds")
+plot.setup.tofext=readRDS(file.path(dir,"plot-setup-tofext.rds"))
 plot.setup.tofext
 ```
 
 
 procSetup dataset:
 ```{r echo=FALSE}
-setup.proc=readRDS("~/setup-proc.rds")
+setup.proc=readRDS(file.path(dir,"setup-proc.rds"))
 setup.proc
 ```
