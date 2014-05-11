@@ -8,6 +8,49 @@ require(knitr)
 require(ggplot2)
 require(reshape)
 
+#Set directories here:
+##########################
+#Root directory (usually the home directory, otherwise it should be 2 steps above the data files)
+dir.root = "~/"
+
+#Path to sorter processor functions minus root dir
+file.fxns = "SorterDataAssembly/ProcessSorterFxns_NU_TCS.R"
+
+#Path to presentation style data file minus root dir
+file.pres = "SorterDataAssembly/PresentationStyle.Rdata"
+
+#Path to experiment folder minus root dir
+dir.data = "SorterDataAssembly"
+
+#Path to contamination file minus root dir
+file.contam = "contamination.R"
+
+#Path to strains file minus root dir
+file.strains = "strains.R"
+
+#Path to setup dir minus root dir
+dir.setup = "setup"
+
+#Path to score dir minus root dir
+dir.score = "score"
+
+#Whole paths to the setup and score report markdown templates
+file.report.setup = "~/SorterDataAssembly/MasterSetupReport.Rmd"
+file.report.score = "~/SorterDataAssembly/MasterScoreReport.Rmd"
+
+
+dir.existing = "~/SorterDataAssembly"
+
+#Next four lines establish the output directories for the reports, results, and temporary files
+##If you change these, it will break the code as it is written, you will need to change some of the
+##directories that are hard coded in later on
+dir.new = "reports"
+dir.create(file.path(dir.existing,dir.new))
+dir.report<-file.path(dir.existing,dir.new)
+dir.create(file.path(dir.existing,"results"))
+dir.create(file.path(dir.existing,"temp"))
+##########################
+
 
 #Extract the plate number
 plateno <- function(string)
@@ -46,89 +89,30 @@ info = function(filePath){
 
 
 
-##########################For simplicity:
-
-
-dir.root = "~/"
-file.fxns = "SorterDataAssembly/ProcessSorterFxns_NU_TCS.R"
-file.pres = "SorterDataAssembly/PresentationStyle.Rdata"
-#dir.data = "Dropbox/HTA/Results/20140318_GWAS1b"
-dir.data = "SorterDataAssembly"
-file.contam = "contamination.R"
-file.strains = "strains.R"
-dir.setup = "setup"
-dir.score = "score"
-
-file.report.setup = "~/SorterDataAssembly/MasterSetupReport.Rmd"
-file.report.score = "~/SorterDataAssembly/MasterScoreReport.Rmd"
-
-
-dir.existing = "~/SorterDataAssembly"
-dir.new = "reports"
-dir.create(file.path(dir.existing,dir.new))
-dir.report<-file.path(dir.existing,dir.new)
-
-dir.create(file.path(dir.existing,"results"))
-
-##########################
-
-
-
-
-
-
 
 #Establish the user's working directory
-# writeLines("Within your working directory, you should be able to access your source functions, all data, and desired output location.
-#            For example: C:/Users/Student.LIU0214")
-# dir.root <- readline("Enter your root directory: ")
 setwd(dir.root)
 
-#Establish the user's file containing the necessary functions, in this case Erik's sorter data processing functions
-# writeLines(paste0("You should have a file from which you source R functions.
-#                   For example: Dropbox/Biosort/Scripts and functions/ProcessSorterFxns_NU.R
-#                   Your filepath root is: ",dir.root))
-# file.fxns <- readline("Enter the location and name of the function file (excluding root): ")
 
 #Source the data to access the enclosed functions
 source(file.path(dir.root,file.fxns))
 
 #Get the user's plot style guide file 
-# writeLines(paste0("You should have a presentation file to help define your plot style.
-#                   For example: Downloads/ForGinaPresentationStyle.Rdata
-#                   Your filepath root is: ",dir.root))
-# file.pres <- readline("Enter the location and name of the function file (excluding root): ")
 load(file.path(dir.root,file.pres))
 
 #Change the user's working directory to that which contains the data from the sorter
-# writeLines(paste0("Within your data directory, you should be able to access your score, setup, contamination, and strain data.
-#                   For example: Dropbox/Gina (1)/example/20140224_dose1
-#                   Your filepath root is: ",dir.root))
-# dir.data <- readline("Enter your data directory (excluding root): ")
 setwd(file.path(dir.root,dir.data))
 
 #Load the contamination file
-# writeLines(paste0("Within your data directory, there should be an R file with contamination data.
-#                   For example: contamination.R
-#                   Your filepath root is: ",dir.root,dir.data))
-# file.contam <- readline("Enter your contamination file name: ")
 source(file.path(dir.root,dir.data,file.contam))
 
 #Load the strain data
-# writeLines(paste0("Within your data directory, there should be an R file with strains data.
-#                   For example: strains.R
-#                   Your filepath root is: ",dir.root,dir.data))
-# file.strains <- readline("Enter your strains file name: ")
 source(file.path(dir.root,dir.data,file.strains))
 
 #Arrange the strain data into plate format
 strains<-matrix(strains,nrow=8,ncol=12,byrow=TRUE)
 
 #Change working directory to the setup data folder
-# writeLines(paste0("Within your data directory, there should be a folder with setup data.
-#                   For example: setup
-#                   Your filepath root is: ",dir.root,dir.data))
-# dir.setup <- readline("Enter the name of the folder with setup data: ")
 setwd(file.path(dir.root,dir.data,dir.setup))
 
 #Get the plate numbers from the file names in the setup directory
@@ -158,10 +142,6 @@ setup.df<-llply(setup.filelist,function(x){procSetup(x)})
 
 
 #Do the same with the scoring data
-# writeLines(paste0("Within your data directory, there should be a folder with score data.
-#                   For example: score
-#                   Your filepath root is: ",dir.root,dir.data))
-# dir.score <- readline("Enter the name of the folder with score data: ")
 setwd(file.path(dir.root,dir.data,dir.score))
 score.filelist<-dir(pattern="*.txt")
 score.plate<-llply(score.filelist,function(x){plateno(x)})
@@ -214,65 +194,20 @@ if(length(score.plate)<(length(setup.plate)))
 }
 
 
-
-
-date=Sys.Date()
-date=as.character(format(date,format="%Y%m%d"))
-saveRDS(date, file="~/date.rds")
-
-# writeLines(paste0("Would you like your setup and score reports to be saved in the specified data directory?
-#                   This directory is: ",dir.root,dir.data))
-# ans <- readline("Please enter y/n: ")
-# 
-# if(ans=="y")
-# {
-#     dir.create(file.path(dir.root,dir.data,"Report/"))
-#     dir.report<-file.path(dir.root,dir.data,"Report/")
-# } else
-# {
-#     ans <- readline("Would you like your setup and score reports to be saved in an existing folder?
-#                   Please enter y/n:")
-#     if(ans=="y")
-#     {
-#         dir.report<-readline("Enter the full name of the directory in which you would like to save your reports:")
-#     }
-#     else
-#     {
-#         dir.existing<-readline("Enter the name of the existing directory in which you'd like to create a new folder:")
-#         dir.new<-readline("Enter the name of the folder for your reports which you'd like to create:")
-#         dir.create(file.path(dir.existing,dir.new))
-#         dir.report<-file.path(dir.existing,dir.new)
-#     }
-# }
-
-
-
-
-
-
-
-
-# writeLines("You should have a .Rmd file template for your setup reports.
-#            For example: C:/Users/Student.LIU0214/Dropbox/Gina (1)/Practice/031214 setup report.Rmd")
-# file.report.setup <- readline("Enter the location of the .Rmd file for setup report: ")
-# 
-# writeLines("You should have a .Rmd file template for your score reports.
-#            For example: C:/Users/Student.LIU0214/Dropbox/Gina (1)/Practice/031914 score report.Rmd")
-# file.report.score <- readline("Enter the location of the .Rmd file for score report: ")
-
-
-
+#Generate all of the reports and data from the setup files
 for(i in 1:(length(setup.plate)))
 {
+    dir.create(file.path(dir.existing,"temp"))
+    
     file.setup <- setup.filelist[[i]]
-    saveRDS(file.setup,file="~/file-setup.rds")
+    saveRDS(file.setup,file=file.path(dir.existing,"temp","file-setup.rds"))
     
     date=Sys.Date()
     date=as.character(format(date,format="%Y%m%d"))
-    saveRDS(date,file="~/date.rds")
+    saveRDS(date,file=file.path(dir.existing,"temp","date.rds"))
     
     setup.proc<-setup.df[[i]]
-    saveRDS(setup.proc,file="~/setup-proc.rds")
+    saveRDS(setup.proc,file=file.path(dir.existing,"temp","setup-proc.rds"))
     
     setup.proc[is.na(setup.proc)]<-0
     setup.proc[-1:-4]<-round(setup.proc[,-1:-4],1) 
@@ -282,7 +217,7 @@ for(i in 1:(length(setup.plate)))
     sorted3 <- subset(setup.proc,sorted==3)
     
     plot.setup.sorted<- ggplot(sorted1)+geom_rect(aes(xmin=0,xmax=5,ymin=0,ymax=5),fill="red")+geom_rect(data=sorted2,aes(xmin=0,xmax=5,ymin=0,ymax=5),fill="yellow")+geom_rect(data=sorted3,aes(xmin=0,xmax=5,ymin=0,ymax=5),fill="green")+facet_grid(row~col) +geom_text(aes(x=2.5,y=2.5,label=sorted))+geom_text(data=sorted2,aes(x=2.5,y=2.5,label=sorted))+geom_text(data=sorted3,aes(x=2.5,y=2.5,label=sorted))+presentation+theme(axis.ticks.x=element_blank(), axis.ticks.y=element_blank(), axis.text.x=element_blank(), axis.text.y=element_blank())+xlab("columns")+ylab("rows")+labs(title=paste0("Setup p",setup.plate[[i]]," # Sorted"))
-    saveRDS(plot.setup.sorted,file="~/plot-setup-sorted.rds")
+    saveRDS(plot.setup.sorted,file=file.path(dir.existing,"temp","plot-setup-sorted.rds"))
     
     
     pop1 <- subset(setup.proc, pop>=50)
@@ -290,12 +225,12 @@ for(i in 1:(length(setup.plate)))
     pop3 <- subset(setup.proc,pop>=15&pop<25)
     pop4 <- subset(setup.proc,pop<15)
     plot.setup.pop <- ggplot(pop1)+geom_rect(aes(xmin=0,xmax=5,ymin=0,ymax=5), fill="red")+geom_rect(data=pop2,aes(xmin=0,xmax=5,ymin=0,ymax=5),fill="yellow")+geom_rect(data=pop3,aes(xmin=0,xmax=5,ymin=0,ymax=5),fill="green")+geom_rect(data=pop4,aes(xmin=0,xmax=5,ymin=0,ymax=5),fill="white")+facet_grid(row~col) +geom_text(aes(x=2.5,y=2.5,label=pop))+geom_text(data=pop2,aes(x=2.5,y=2.5,label=pop))+geom_text(data=pop3,aes(x=2.5,y=2.5,label=pop))+geom_text(data=pop4,aes(x=2.5,y=2.5,label=pop))+presentation+theme(axis.ticks.x=element_blank(), axis.ticks.y=element_blank(), axis.text.x=element_blank(), axis.text.y=element_blank())+xlab("columns")+ylab("rows")+labs(title=paste0("Setup p",setup.plate[[i]]," Population"))
-    saveRDS(plot.setup.pop,file="~/plot-setup-pop.rds")
+    saveRDS(plot.setup.pop,file=file.path(dir.existing,"temp","plot-setup-pop.rds"))
     
     plot.setup.tofext<-ggplot(setup.proc)+geom_rect(fill=NA,aes(xmin=0,xmax=5,ymin=0,ymax=5))+facet_grid(row~col)+geom_text(aes(x=1,y=4,label=TOF))+geom_text(aes(x=4,y=4,label=EXT))+geom_text(aes(x=1,y=1,label=TOFmed))+geom_text(aes(x=4,y=1,label=EXTmed))+presentation+theme(axis.ticks.x=element_blank(), axis.ticks.y=element_blank(), axis.text.x=element_blank(), axis.text.y=element_blank())+xlab("columns")+ylab("rows")+labs(title="Setup p",setup.plate[[i]]," TOF/EXT")
-    saveRDS(plot.setup.tofext,file="~/plot-setup-tofext.rds")
+    saveRDS(plot.setup.tofext,file=file.path(dir.existing,"temp","plot-setup-tofext.rds"))
     
-    saveRDS(strains, file="~/strains.rds")
+    saveRDS(strains, file=file.path(dir.existing,"temp","strains.rds"))
     
     split <- setup.plate[[i]]
     plate<-paste0("p",split)
@@ -306,17 +241,22 @@ for(i in 1:(length(setup.plate)))
         contam<-"NA"
     }
     
-    saveRDS(split,file="~/split.rds")
-    saveRDS(contam,file="~/contam.rds")
+    saveRDS(split,file=file.path(dir.existing,"temp","split.rds"))
+    saveRDS(contam,file=file.path(dir.existing,"temp","contam.rds"))
     
     
-    knit(file.report.setup, paste0(date,'-',split,'.md'))
+    knit(file.report.setup, file.path(dir.existing,"temp",paste0(date,'-',split,'.md')))
+    
+    #markdownToHTML does not work with filepaths, only filenames, therefore, this strange setwd() workaround is necessary
+    setwd(file.path(dir.existing,"temp"))
     markdownToHTML(paste0(date,'-',split,'.md'), file.path(dir.report,paste0(split,'_setup.html')))
+    setwd(file.path(dir.root,dir.data,dir.score))
     
-    file.remove(paste0(date,'-',split,'.md'))
-    madefiles=c("~/date.rds","~/file-setup.rds","~/plot-setup-sorted.rds","~/plot-setup-pop.rds", "~/plot-setup-tofext.rds", "~/setup-proc.rds","~/strains.rds","~/contam.rds","~/split.rds")
-    file.remove(madefiles)
+    unlink(file.path(dir.existing,"temp"), recursive = TRUE)
 }
+
+
+
 
 
 
@@ -542,13 +482,6 @@ melted.score.proc<-llply(score.proc,function(x){meltdf(x)})
 
 
 
-
-
-
-
-
-
-
 #Create complete data frame
 score.info = llply(file.path(dir.data,score.filelist), function(x){info(x)})
 for(i in 1:length(score.proc)){
@@ -561,30 +494,32 @@ for(i in 1:length(score.proc)){
 #Print out final reports and assemble final data frames
 for(i in 1:(length(score.plate)))
 {
+    dir.create(file.path(dir.existing,"temp"))
     file.score<-score.filelist[[i]]
-    saveRDS(file.score,file="~/file-score.rds")
+    saveRDS(file.score,file=file.path(dir.existing,"temp","file-score.rds"))
     
     
-    saveRDS(strains,file="~/strains.rds")
+    saveRDS(strains,file=file.path(dir.existing,"temp","strains.rds"))
     
     
     date=Sys.Date()
     date=as.character(format(date,format="%Y%m%d"))
-    saveRDS(date,file="~/date.rds")
+    saveRDS(date,file=file.path(dir.existing,"temp","date.rds"))
     
     
     proc<-score.proc[[i]]
-    saveRDS(proc,file="~/proc.rds")
+    saveRDS(proc,file=file.path(dir.existing,"temp","proc.rds"))
+    
     fileName = paste0(i,".csv")
     write.csv(proc,file = file.path(dir.existing,"results",fileName))
     
     
     split<-score.plate[[i]]
-    saveRDS(split,file="~/split.rds")
+    saveRDS(split,file=file.path(dir.existing,"temp","split.rds"))
     
     plate<-paste0("p",split)
     contam<-get(plate)
-    saveRDS(contam,file="~/contam.rds")
+    saveRDS(contam,file=file.path(dir.existing,"temp","contam.rds"))
     
     proc[is.na(proc)]<-0
     proc$norm.n<-round(proc$norm.n,0)
@@ -594,24 +529,29 @@ for(i in 1:(length(score.plate)))
     proc$meanEXT<-round(proc$meanEXT,1)
     
     plot.score.pop<-ggplot(proc)+geom_rect(aes(xmin=0,xmax=5,ymin=0,ymax=5,fill=norm.n))+facet_grid(row~col)+geom_text(aes(x=2.5,y=2.5,label=norm.n,colour="white"))+presentation+theme(axis.ticks.x=element_blank(), axis.ticks.y=element_blank(), axis.text.x=element_blank(), axis.text.y=element_blank())+xlab("columns")+ylab("rows")+labs(title=paste0("Score p",score.plate[[i]]," Population"))
-    saveRDS(plot.score.pop,file="~/plot-score-pop.rds")
+    saveRDS(plot.score.pop,file=file.path(dir.existing,"temp","plot-score-pop.rds"))
     
     plot.score.red<-ggplot(proc)+geom_rect(aes(xmin=0,xmax=5,ymin=0,ymax=5),fill=NA)+facet_grid(row~col)+geom_text(aes(x=1,y=4,label=mean.normred))+geom_text(aes(x=4,y=1,label=median.normred))+presentation+theme(axis.ticks.x=element_blank(), axis.ticks.y=element_blank(), axis.text.x=element_blank(), axis.text.y=element_blank())+xlab("columns")+ylab("rows")+labs(title=paste0("Score p",score.plate[[i]]," Red Fluorescence"))
-    saveRDS(plot.score.red,file="~/plot-score-red.rds")
+    saveRDS(plot.score.red,file=file.path(dir.existing,"temp","plot-score-red.rds"))
     
     plot.score.tofext<-ggplot(proc)+geom_rect(fill=NA,aes(xmin=0,xmax=5,ymin=0,ymax=5))+facet_grid(row~col)+geom_text(aes(x=1,y=4,label=meanTOF))+geom_text(aes(x=4,y=4,label=meanEXT))+geom_text(aes(x=1,y=1,label=medianTOF))+geom_text(aes(x=4,y=1,label=medianEXT))+presentation+theme(axis.ticks.x=element_blank(), axis.ticks.y=element_blank(), axis.text.x=element_blank(), axis.text.y=element_blank())+xlab("columns")+ylab("rows")+labs(title=paste0("Score p",score.plate[[i]]," TOF/EXT"))
-    saveRDS(plot.score.tofext,file="~/plot-score-tofext.rds")
+    saveRDS(plot.score.tofext,file=file.path(dir.existing,"temp","plot-score-tofext.rds"))
     
     melted.proc<-melted.score.proc[[i]]
     plot.score.dist<-ggplot(melted.proc,aes(as.factor(col),value,fill=variable))+geom_bar(aes(x=3),stat="identity",position="stack")+facet_grid(row~col)+presentation+theme(axis.ticks.x=element_blank(), axis.ticks.y=element_blank(), axis.text.x=element_blank(), axis.text.y=element_blank())+xlab("columns")+ylab("rows")+labs(title=paste0("Score p",score.plate[[i]]," Life-stage Distribution"))
-    saveRDS(plot.score.dist,file="~/plot-score-dist.rds")
+    saveRDS(plot.score.dist,file=file.path(dir.existing,"temp","plot-score-dist.rds"))
     
-    knit(file.report.score, paste0(date,'-',split,'-score.md'))
+    knit(file.report.score, file.path(dir.existing,"temp",paste0(date,'-',split,'-score.md')))
+    
+    setwd(file.path(dir.existing,"temp"))
     markdownToHTML(paste0(date,'-',split,'-score.md'), file.path(dir.report,paste0(split,"_score.html")))
+    setwd(file.path(dir.root,dir.data,dir.score))
     
-    file.remove(paste0(date,'-',split,'-score.md'))
-    madefiles=c("~/date.rds","~/proc.rds","~/file-score.rds","~/contam.rds","~/plot-score-pop.rds","~/plot-score-red.rds","~/plot-score-tofext.rds","~/strains.rds","~/split.rds")
-    file.remove(madefiles)
+#     file.remove(paste0(date,'-',split,'-score.md'))
+#     madefiles=c("~/date.rds","~/proc.rds","~/file-score.rds","~/contam.rds","~/plot-score-pop.rds","~/plot-score-red.rds","~/plot-score-tofext.rds","~/strains.rds","~/split.rds")
+#     file.remove(madefiles)
+    
+    unlink(file.path(dir.existing,"temp"), recursive = TRUE)
 } 
 
 
