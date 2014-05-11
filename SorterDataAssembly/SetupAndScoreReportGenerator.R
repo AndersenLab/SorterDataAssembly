@@ -198,6 +198,7 @@ if(length(score.plate)<(length(setup.plate)))
 for(i in 1:(length(setup.plate)))
 {
     dir.create(file.path(dir.existing,"temp"))
+    setwd(file.path(dir.existing,"temp"))
     
     file.setup <- setup.filelist[[i]]
     saveRDS(file.setup,file=file.path(dir.existing,"temp","file-setup.rds"))
@@ -245,12 +246,8 @@ for(i in 1:(length(setup.plate)))
     saveRDS(contam,file=file.path(dir.existing,"temp","contam.rds"))
     
     
-    knit(file.report.setup, file.path(dir.existing,"temp",paste0(date,'-',split,'.md')))
-    
-    #markdownToHTML does not work with filepaths, only filenames, therefore, this strange setwd() workaround is necessary
-    setwd(file.path(dir.existing,"temp"))
+    knit(file.report.setup, file.path(dir.existing,"temp",paste0(date,'-',split,'.md'))) 
     markdownToHTML(paste0(date,'-',split,'.md'), file.path(dir.report,paste0(split,'_setup.html')))
-    setwd(file.path(dir.root,dir.data,dir.score))
     
     unlink(file.path(dir.existing,"temp"), recursive = TRUE)
 }
@@ -495,6 +492,9 @@ for(i in 1:length(score.proc)){
 for(i in 1:(length(score.plate)))
 {
     dir.create(file.path(dir.existing,"temp"))
+    setwd(file.path(dir.existing,"temp"))
+    
+    
     file.score<-score.filelist[[i]]
     saveRDS(file.score,file=file.path(dir.existing,"temp","file-score.rds"))
     
@@ -542,10 +542,7 @@ for(i in 1:(length(score.plate)))
     saveRDS(plot.score.dist,file=file.path(dir.existing,"temp","plot-score-dist.rds"))
     
     knit(file.report.score, file.path(dir.existing,"temp",paste0(date,'-',split,'-score.md')))
-    
-    setwd(file.path(dir.existing,"temp"))
     markdownToHTML(paste0(date,'-',split,'-score.md'), file.path(dir.report,paste0(split,"_score.html")))
-    setwd(file.path(dir.root,dir.data,dir.score))
     
 #     file.remove(paste0(date,'-',split,'-score.md'))
 #     madefiles=c("~/date.rds","~/proc.rds","~/file-score.rds","~/contam.rds","~/plot-score-pop.rds","~/plot-score-red.rds","~/plot-score-tofext.rds","~/strains.rds","~/split.rds")
