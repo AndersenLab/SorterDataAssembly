@@ -336,8 +336,6 @@ score.pheno<-llply(score.modplate,function(x){processPheno(x,t(strains))})
 
 
 
-
-
 #adds to score.pheno datasets a column of n normalized by number sorted in setup
 for(i in 1:length(score.plate))
 {
@@ -543,10 +541,6 @@ for(i in 1:(length(score.plate)))
     
     knit(file.report.score, file.path(dir.existing,"temp",paste0(date,'-',split,'-score.md')))
     markdownToHTML(paste0(date,'-',split,'-score.md'), file.path(dir.report,paste0(split,"_score.html")))
-    
-#     file.remove(paste0(date,'-',split,'-score.md'))
-#     madefiles=c("~/date.rds","~/proc.rds","~/file-score.rds","~/contam.rds","~/plot-score-pop.rds","~/plot-score-red.rds","~/plot-score-tofext.rds","~/strains.rds","~/split.rds")
-#     file.remove(madefiles)
     
     unlink(file.path(dir.existing,"temp"), recursive = TRUE)
 } 
