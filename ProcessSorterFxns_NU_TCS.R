@@ -4,10 +4,8 @@ readSorter <- function(file, tofmin=20, tofmax=2000, extmin=20, extmax=5000)  {
   data<-read.delim(file=file, header=T, na.strings=c("n/a"), as.is=T, stringsAsFactors=F)
   data<-data[!is.na(data$TOF),]
   data<-data[,!is.na(data[1,])]
-  data<-data[data$TOF>=tofmin,]
-  data<-data[data$EXT>=extmin,]
-  data<-data[data$TOF<=tofmax,]
-  data<-data[data$EXT<=extmax,]
+  data<-data[(data$TOF>=tofmin & data$TOF<=tofmax) | data$TOF == -1,]
+  data<-data[(data$EXT>=extmin & data$EXT<=extmax) | data$EXT == -1,]
   data$Column<-as.factor(data$Column)
   data$Row<-as.factor(data$Row)
   return(data)
