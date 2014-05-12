@@ -27,6 +27,13 @@ contam
 ```
 
 
+Possibly contaminated wells:
+```{r echo=FALSE}
+possibleContam = readRDS(file.path(dir,"possibleContam.rds"))
+possibleContam
+```
+
+
 Number of worms in each well:
 ```{r echo=FALSE,fig.width=15,fig.height=10}
 plot.score.pop=readRDS(file.path(dir,"plot-score-pop.rds"))

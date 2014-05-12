@@ -519,6 +519,32 @@ for(i in 1:(length(score.plate)))
     proc<-score.proc[[i]]
     saveRDS(proc,file=file.path(dir.existing,"temp","proc.rds"))
     
+    
+    strainMean = mean(proc$n[!is.na(proc$strain)])
+    strainSD = sd(proc$n[!is.na(proc$strain)])
+    
+    
+    washMean = mean(proc$n[is.na(proc$strain)])
+    washSD = sd(proc$n[is.na(proc$strain)])
+    
+    
+    possibleContam = c()
+    for(j in seq(1,nrow(proc),)){
+        if(!is.na(proc[j,"strain"])){
+            if(proc[j,"n"] > strainMean + (2*strainSD)){
+                row = as.character(proc[j, "row"])
+                col = as.numeric(proc[j, "col"])
+                adjacentWash = proc[proc$row==row & proc$col==(col+1),"n"]
+                if(adjacentWash > washMean + (2*washSD)){
+                    possibleContam = append(possibleContam, paste0(row, col))
+                }
+            }
+        }
+    } 
+    
+    saveRDS(possibleContam,file=file.path(dir.existing,"temp","possibleContam.rds"))
+    
+    
     fileName = paste0(i,".csv")
     write.csv(proc,file = file.path(dir.existing,"results",fileName))
     
