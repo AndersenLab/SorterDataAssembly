@@ -8,19 +8,29 @@ require(knitr)
 require(ggplot2)
 require(reshape)
 
+
+###############Change for each experiment###################
+
+#Path to experiment folder minus root dir
+dir.data = "Dropbox/HTA/Results/20140318_GWAS1b"
+
+###############Change for each experiment###################
+
+
+
+
+
+
 #Set directories here:
 ##########################
 #Root directory (usually the home directory, otherwise it should be 2 steps above the data files)
-dir.root = "~/"
+dir.root = "~"
 
 #Path to sorter processor functions minus root dir
 file.fxns = "SorterDataAssembly/ProcessSorterFxns_NU_TCS.R"
 
 #Path to presentation style data file minus root dir
 file.pres = "SorterDataAssembly/PresentationStyle.Rdata"
-
-#Path to experiment folder minus root dir
-dir.data = "SorterDataAssembly"
 
 #Path to contamination file minus root dir
 file.contam = "contamination.R"
@@ -39,7 +49,7 @@ file.report.setup = "~/SorterDataAssembly/MasterSetupReport.Rmd"
 file.report.score = "~/SorterDataAssembly/MasterScoreReport.Rmd"
 
 
-dir.existing = "~/SorterDataAssembly"
+dir.existing = file.path(dir.root,dir.data)
 
 #Next four lines establish the output directories for the reports, results, and temporary files
 ##If you change these, it will break the code as it is written, you will need to change some of the
@@ -82,7 +92,7 @@ info = function(filePath){
     drug = strsplit(split[2],"\\.")[[1]][1]
     plate = strsplit(split[1],"p")[[1]][2]
     
-    frame = data.frame(date,experiment,round,assay)
+    frame = data.frame(date,experiment,round,assay,plate,drug)
     
     return(frame)
 }
@@ -195,62 +205,62 @@ if(length(score.plate)<(length(setup.plate)))
 
 
 #Generate all of the reports and data from the setup files
-for(i in 1:(length(setup.plate)))
-{
-    dir.create(file.path(dir.existing,"temp"))
-    setwd(file.path(dir.existing,"temp"))
-    
-    file.setup <- setup.filelist[[i]]
-    saveRDS(file.setup,file=file.path(dir.existing,"temp","file-setup.rds"))
-    
-    date=Sys.Date()
-    date=as.character(format(date,format="%Y%m%d"))
-    saveRDS(date,file=file.path(dir.existing,"temp","date.rds"))
-    
-    setup.proc<-setup.df[[i]]
-    saveRDS(setup.proc,file=file.path(dir.existing,"temp","setup-proc.rds"))
-    
-    setup.proc[is.na(setup.proc)]<-0
-    setup.proc[-1:-4]<-round(setup.proc[,-1:-4],1) 
-    
-    sorted1 <- subset(setup.proc, sorted==1|sorted==0)
-    sorted2 <- subset(setup.proc, sorted==2)
-    sorted3 <- subset(setup.proc,sorted==3)
-    
-    plot.setup.sorted<- ggplot(sorted1)+geom_rect(aes(xmin=0,xmax=5,ymin=0,ymax=5),fill="red")+geom_rect(data=sorted2,aes(xmin=0,xmax=5,ymin=0,ymax=5),fill="yellow")+geom_rect(data=sorted3,aes(xmin=0,xmax=5,ymin=0,ymax=5),fill="green")+facet_grid(row~col) +geom_text(aes(x=2.5,y=2.5,label=sorted))+geom_text(data=sorted2,aes(x=2.5,y=2.5,label=sorted))+geom_text(data=sorted3,aes(x=2.5,y=2.5,label=sorted))+presentation+theme(axis.ticks.x=element_blank(), axis.ticks.y=element_blank(), axis.text.x=element_blank(), axis.text.y=element_blank())+xlab("columns")+ylab("rows")+labs(title=paste0("Setup p",setup.plate[[i]]," # Sorted"))
-    saveRDS(plot.setup.sorted,file=file.path(dir.existing,"temp","plot-setup-sorted.rds"))
-    
-    
-    pop1 <- subset(setup.proc, pop>=50)
-    pop2 <- subset(setup.proc, pop>=25&pop<50)
-    pop3 <- subset(setup.proc,pop>=15&pop<25)
-    pop4 <- subset(setup.proc,pop<15)
-    plot.setup.pop <- ggplot(pop1)+geom_rect(aes(xmin=0,xmax=5,ymin=0,ymax=5), fill="red")+geom_rect(data=pop2,aes(xmin=0,xmax=5,ymin=0,ymax=5),fill="yellow")+geom_rect(data=pop3,aes(xmin=0,xmax=5,ymin=0,ymax=5),fill="green")+geom_rect(data=pop4,aes(xmin=0,xmax=5,ymin=0,ymax=5),fill="white")+facet_grid(row~col) +geom_text(aes(x=2.5,y=2.5,label=pop))+geom_text(data=pop2,aes(x=2.5,y=2.5,label=pop))+geom_text(data=pop3,aes(x=2.5,y=2.5,label=pop))+geom_text(data=pop4,aes(x=2.5,y=2.5,label=pop))+presentation+theme(axis.ticks.x=element_blank(), axis.ticks.y=element_blank(), axis.text.x=element_blank(), axis.text.y=element_blank())+xlab("columns")+ylab("rows")+labs(title=paste0("Setup p",setup.plate[[i]]," Population"))
-    saveRDS(plot.setup.pop,file=file.path(dir.existing,"temp","plot-setup-pop.rds"))
-    
-    plot.setup.tofext<-ggplot(setup.proc)+geom_rect(fill=NA,aes(xmin=0,xmax=5,ymin=0,ymax=5))+facet_grid(row~col)+geom_text(aes(x=1,y=4,label=TOF))+geom_text(aes(x=4,y=4,label=EXT))+geom_text(aes(x=1,y=1,label=TOFmed))+geom_text(aes(x=4,y=1,label=EXTmed))+presentation+theme(axis.ticks.x=element_blank(), axis.ticks.y=element_blank(), axis.text.x=element_blank(), axis.text.y=element_blank())+xlab("columns")+ylab("rows")+labs(title="Setup p",setup.plate[[i]]," TOF/EXT")
-    saveRDS(plot.setup.tofext,file=file.path(dir.existing,"temp","plot-setup-tofext.rds"))
-    
-    saveRDS(strains, file=file.path(dir.existing,"temp","strains.rds"))
-    
-    split <- setup.plate[[i]]
-    plate<-paste0("p",split)
-    
-    if(isTRUE(exists(plate))){
-        contam<-get(plate)
-    } else {
-        contam<-"NA"
-    }
-    
-    saveRDS(split,file=file.path(dir.existing,"temp","split.rds"))
-    saveRDS(contam,file=file.path(dir.existing,"temp","contam.rds"))
-    
-    
-    knit(file.report.setup, file.path(dir.existing,"temp",paste0(date,'-',split,'.md'))) 
-    markdownToHTML(paste0(date,'-',split,'.md'), file.path(dir.report,paste0(split,'_setup.html')))
-    
-    unlink(file.path(dir.existing,"temp"), recursive = TRUE)
-}
+# for(i in 1:(length(setup.plate)))
+# {
+#     dir.create(file.path(dir.existing,"temp"))
+#     setwd(file.path(dir.existing,"temp"))
+#     
+#     file.setup <- setup.filelist[[i]]
+#     saveRDS(file.setup,file=file.path(dir.existing,"temp","file-setup.rds"))
+#     
+#     date=Sys.Date()
+#     date=as.character(format(date,format="%Y%m%d"))
+#     saveRDS(date,file=file.path(dir.existing,"temp","date.rds"))
+#     
+#     setup.proc<-setup.df[[i]]
+#     saveRDS(setup.proc,file=file.path(dir.existing,"temp","setup-proc.rds"))
+#     
+#     setup.proc[is.na(setup.proc)]<-0
+#     setup.proc[-1:-4]<-round(setup.proc[,-1:-4],1) 
+#     
+#     sorted1 <- subset(setup.proc, sorted==1|sorted==0)
+#     sorted2 <- subset(setup.proc, sorted==2)
+#     sorted3 <- subset(setup.proc,sorted==3)
+#     
+#     plot.setup.sorted<- ggplot(sorted1)+geom_rect(aes(xmin=0,xmax=5,ymin=0,ymax=5),fill="red")+geom_rect(data=sorted2,aes(xmin=0,xmax=5,ymin=0,ymax=5),fill="yellow")+geom_rect(data=sorted3,aes(xmin=0,xmax=5,ymin=0,ymax=5),fill="green")+facet_grid(row~col) +geom_text(aes(x=2.5,y=2.5,label=sorted))+geom_text(data=sorted2,aes(x=2.5,y=2.5,label=sorted))+geom_text(data=sorted3,aes(x=2.5,y=2.5,label=sorted))+presentation+theme(axis.ticks.x=element_blank(), axis.ticks.y=element_blank(), axis.text.x=element_blank(), axis.text.y=element_blank())+xlab("columns")+ylab("rows")+labs(title=paste0("Setup p",setup.plate[[i]]," # Sorted"))
+#     saveRDS(plot.setup.sorted,file=file.path(dir.existing,"temp","plot-setup-sorted.rds"))
+#     
+#     
+#     pop1 <- subset(setup.proc, pop>=50)
+#     pop2 <- subset(setup.proc, pop>=25&pop<50)
+#     pop3 <- subset(setup.proc,pop>=15&pop<25)
+#     pop4 <- subset(setup.proc,pop<15)
+#     plot.setup.pop <- ggplot(pop1)+geom_rect(aes(xmin=0,xmax=5,ymin=0,ymax=5), fill="red")+geom_rect(data=pop2,aes(xmin=0,xmax=5,ymin=0,ymax=5),fill="yellow")+geom_rect(data=pop3,aes(xmin=0,xmax=5,ymin=0,ymax=5),fill="green")+geom_rect(data=pop4,aes(xmin=0,xmax=5,ymin=0,ymax=5),fill="white")+facet_grid(row~col) +geom_text(aes(x=2.5,y=2.5,label=pop))+geom_text(data=pop2,aes(x=2.5,y=2.5,label=pop))+geom_text(data=pop3,aes(x=2.5,y=2.5,label=pop))+geom_text(data=pop4,aes(x=2.5,y=2.5,label=pop))+presentation+theme(axis.ticks.x=element_blank(), axis.ticks.y=element_blank(), axis.text.x=element_blank(), axis.text.y=element_blank())+xlab("columns")+ylab("rows")+labs(title=paste0("Setup p",setup.plate[[i]]," Population"))
+#     saveRDS(plot.setup.pop,file=file.path(dir.existing,"temp","plot-setup-pop.rds"))
+#     
+#     plot.setup.tofext<-ggplot(setup.proc)+geom_rect(fill=NA,aes(xmin=0,xmax=5,ymin=0,ymax=5))+facet_grid(row~col)+geom_text(aes(x=1,y=4,label=TOF))+geom_text(aes(x=4,y=4,label=EXT))+geom_text(aes(x=1,y=1,label=TOFmed))+geom_text(aes(x=4,y=1,label=EXTmed))+presentation+theme(axis.ticks.x=element_blank(), axis.ticks.y=element_blank(), axis.text.x=element_blank(), axis.text.y=element_blank())+xlab("columns")+ylab("rows")+labs(title="Setup p",setup.plate[[i]]," TOF/EXT")
+#     saveRDS(plot.setup.tofext,file=file.path(dir.existing,"temp","plot-setup-tofext.rds"))
+#     
+#     saveRDS(strains, file=file.path(dir.existing,"temp","strains.rds"))
+#     
+#     split <- setup.plate[[i]]
+#     plate<-paste0("p",split)
+#     
+#     if(isTRUE(exists(plate))){
+#         contam<-get(plate)
+#     } else {
+#         contam<-"NA"
+#     }
+#     
+#     saveRDS(split,file=file.path(dir.existing,"temp","split.rds"))
+#     saveRDS(contam,file=file.path(dir.existing,"temp","contam.rds"))
+#     
+#     
+#     knit(file.report.setup, file.path(dir.existing,"temp",paste0(date,'-',split,'.md'))) 
+#     markdownToHTML(paste0(date,'-',split,'.md'), file.path(dir.report,paste0(split,'_setup.html')))
+#     
+#     unlink(file.path(dir.existing,"temp"), recursive = TRUE)
+# }
 
 
 
