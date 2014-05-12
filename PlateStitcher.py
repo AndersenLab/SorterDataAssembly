@@ -76,12 +76,10 @@ for i in range(0, len(duplicates)):
                     shutil.move(fileName, folderName)
 
             for k in allData:
-                print k
                 if k == header:
                     allData.remove(k)
                 else:
                     well = k[2], k[3]
-                    print well
                     wells.add(well)
 
             allRows = ["A", "B", "C", "D", "E", "F", "G", "H"]
@@ -98,7 +96,6 @@ for i in range(0, len(duplicates)):
                           "-1", "-1", "-1", "-1", "-1", "-1", "-1",
                           "-1", "-1", "-1", "-1", "-1", "-1", "-1"]
                 # newRow = ("\t".join(newrow) + "\n")
-                print newRow
                 allData.append(newRow)
 
             newFile = open(name, "w+")
