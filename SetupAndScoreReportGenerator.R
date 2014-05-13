@@ -12,7 +12,7 @@ require(reshape)
 ###############Change for each experiment###################
 
 #Path to experiment folder minus root dir
-dir.data = "SorterDataAssembly"
+dir.data = "Dropbox/HTA/Results/20140317_GWAS1a"
 
 ###############Change for each experiment###################
 
@@ -255,9 +255,10 @@ for(i in 1:(length(setup.plate)))
     saveRDS(split,file=file.path(dir.existing,"temp","split.rds"))
     saveRDS(contam,file=file.path(dir.existing,"temp","contam.rds"))
     
+    fileNameString = paste0(date,'-',split,'.md')
     
-    knit(file.report.setup, file.path(dir.existing,"temp",paste0(date,'-',split,'.md'))) 
-    markdownToHTML(paste0(date,'-',split,'.md'), file.path(dir.report,paste0(split,'_setup.html')))
+    knit(file.report.setup, file.path(dir.existing,"temp",fileNameString)) 
+    markdownToHTML(fileNameString, file.path(dir.report,paste0(split,'_setup.html')))
     
     unlink(file.path(dir.existing,"temp"), recursive = TRUE)
 }
@@ -576,8 +577,10 @@ for(i in 1:(length(score.plate)))
     plot.score.dist<-ggplot(melted.proc,aes(as.factor(col),value,fill=variable))+geom_bar(aes(x=3),stat="identity",position="stack")+facet_grid(row~col)+presentation+theme(axis.ticks.x=element_blank(), axis.ticks.y=element_blank(), axis.text.x=element_blank(), axis.text.y=element_blank())+xlab("columns")+ylab("rows")+labs(title=paste0("Score p",score.plate[[i]]," Life-stage Distribution"))
     saveRDS(plot.score.dist,file=file.path(dir.existing,"temp","plot-score-dist.rds"))
     
-    knit(file.report.score, file.path(dir.existing,"temp",paste0(date,'-',split,'-score.md')))
-    markdownToHTML(paste0(date,'-',split,'-score.md'), file.path(dir.report,paste0(split,"_score.html")))
+    fileNameString = paste0(date,'-',split,'-score.md')
+    
+    knit(file.report.score, file.path(dir.existing,"temp",fileNameString))
+    markdownToHTML(fileNameString, file.path(dir.report,paste0(split,"_score.html")))
     
     unlink(file.path(dir.existing,"temp"), recursive = TRUE)
 } 
