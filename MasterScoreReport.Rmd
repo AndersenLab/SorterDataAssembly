@@ -1,6 +1,6 @@
 ```{r echo=FALSE}
 #Change this line to match the created temporary directory
-dir = "~/SorterDataAssembly/temp"
+dir = file.path(dir.existing, "temp")
 
 date=readRDS(file.path(dir,"date.rds"))
 plate=readRDS(file.path(dir,"split.rds"))
