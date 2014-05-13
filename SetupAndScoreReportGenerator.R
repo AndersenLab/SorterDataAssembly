@@ -12,7 +12,7 @@ require(reshape)
 ###############Change for each experiment###################
 
 #Path to experiment folder minus root dir
-dir.data = "Dropbox/HTA/Results/20140317_GWAS1a"
+dir.data = "Dropbox/HTA/Results/20140318_GWAS1b"
 
 ###############Change for each experiment###################
 
