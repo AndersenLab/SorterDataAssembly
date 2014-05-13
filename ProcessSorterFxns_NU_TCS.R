@@ -303,7 +303,7 @@ removeWells <- function(proc, badwells) {
   for (i in seq(1, length(sp.bw))) {
     row <- sp.bw[[i]][2]
     col <- sp.bw[[i]][3]
-    proc[which(proc$row == row & proc$col == col),-(1:7)] <- NA
+    proc[which(proc$row == row & proc$col == col),-(1:3)] <- NA
   }
   return(proc)
 }
