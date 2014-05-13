@@ -1,4 +1,4 @@
-```{r echo=FALSE}
+```{r echo=FALSE, warnings=FALSE}
 #Change this line to match the created temporary directory
 dir = file.path(dir.existing, "temp")
 
@@ -13,7 +13,7 @@ File name: `r file.score`
 
 
 Strain information:
-```{r echo = FALSE}
+```{r echo = FALSE, warnings=FALSE}
 options(width = 110)
 strains=readRDS(file.path(dir,"strains.rds"))
 strains
@@ -21,21 +21,21 @@ strains
 
 
 Contaminated wells:
-```{r echo=FALSE}
+```{r echo=FALSE, warnings=FALSE}
 contam=readRDS(file.path(dir,"contam.rds"))
 contam
 ```
 
 
 Possibly contaminated wells:
-```{r echo=FALSE}
+```{r echo=FALSE, warnings=FALSE}
 possibleContam = readRDS(file.path(dir,"possibleContam.rds"))
 possibleContam
 ```
 
 
 Number of worms in each well:
-```{r echo=FALSE,fig.width=15,fig.height=10}
+```{r echo=FALSE,fig.width=15,fig.height=10, warnings=FALSE}
 plot.score.pop=readRDS(file.path(dir,"plot-score-pop.rds"))
 plot.score.pop
 ```
@@ -46,7 +46,7 @@ plot.score.pop
 + Top right: Mean EXT
 + Bottom left: Median TOF
 + Bottom right: Median EXT
-```{r echo=FALSE,fig.width=15,fig.height=10}
+```{r echo=FALSE,fig.width=15,fig.height=10, warnings=FALSE}
 plot.score.tofext=readRDS(file.path(dir,"plot-score-tofext.rds"))
 plot.score.tofext
 ```
@@ -56,7 +56,7 @@ plot.score.tofext
 Red fluorescence (normalized by mean TOF):
 + Top left: Mean red
 + Bottom right: Median red
-```{r echo=FALSE,fig.width=15,fig.height=10}
+```{r echo=FALSE,fig.width=15,fig.height=10, warnings=FALSE}
 plot.score.red=readRDS(file.path(dir,"plot-score-red.rds"))
 plot.score.red
 ```
@@ -64,7 +64,7 @@ plot.score.red
 
 
 Life-stage distribution:
-```{r echo=FALSE}
+```{r echo=FALSE, warnings=FALSE}
 plot.score.dist=readRDS(file.path(dir,"plot-score-dist.rds"))
 plot.score.dist
 ```
@@ -72,7 +72,7 @@ plot.score.dist
 
 
 Processed dataset:
-```{r echo=FALSE}
+```{r echo=FALSE, warnings=FALSE}
 proc=readRDS(file.path(dir,"proc.rds"))
 proc
 ```
