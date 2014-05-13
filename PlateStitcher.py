@@ -1,5 +1,4 @@
 # Import Tkinter to be able to graphically retrieve the directory
-from Tkinter import Tk
 from tkFileDialog import askdirectory
 from os import listdir, mkdir
 from os.path import exists
@@ -9,8 +8,16 @@ import collections
 import csv
 import shutil
 
+
+class colors:
+    WARNING = "\x1b[33m"
+    TESTING = "\x1b[36m"
+    FINISH = "\x1b[32m"
+    PROMPT = "\x1b[31m"
+    DEFAULT = "\x1b[39m"
+
 # Get the directory
-directory = askdirectory()
+directory = askdirectory(initialdir="~/")
 files = listdir(directory)
 txtFiles = []
 
@@ -69,9 +76,11 @@ for i in range(0, len(duplicates)):
         if duplicates[i][0] in txtFiles[m]:
             drugNames.add(txtFiles[m].split("_")[1].split(".")[0])
     if len(drugNames) != 1:
-        string = ("All the drug names for " + str(duplicates[i][0]) +
-                  " do not match, they include " + str(drugNames) +
-                  ". Do you still want to stitch these files? (y/n): ")
+        string = (colors.PROMPT + "All the drug names for " +
+                  str(duplicates[i][0]) + " do not match, they include " +
+                  str(drugNames) +
+                  ". Do you still want to stitch these files? (y/n): " +
+                  colors.DEFAULT)
         answer = raw_input(string)
     if answer == "y" or answer == "yes":
         if not skip:
@@ -104,9 +113,9 @@ for i in range(0, len(duplicates)):
 
             for q in missingWells:
                 newRow = ["-1", "-1", str(q[0]), str(q[1]), "N",
-                          "-1", "0", "-1", "-1", "-1", "-1", "-1",
-                          "-1", "-1", "-1", "-1", "-1", "-1", "-1",
-                          "-1", "-1", "-1", "-1", "-1", "-1", "-1"]
+                          "-1", "0"]
+                while len(newRow) < len(header):
+                    newRow.append("-1")
                 allData.append(newRow)
 
             newFile = open(name, "w+")
@@ -117,13 +126,27 @@ for i in range(0, len(duplicates)):
 
             newFile.close()
 
-            print ("Stitched " + str(duplicates[i][1]) + " " +
-                   str(duplicates[i][1]) + " entries together and added dummy data for " +
-                   str(len(missingWells)) + " missing wells. Original files moved to " +
-                   folderName + ".\n")
+            print (colors.WARNING + "\nStitched " + str(duplicates[i][1]) +
+                   " " + str(duplicates[i][0]) +
+                   " entries together and added dummy data for " +
+                   str(len(missingWells)) +
+                   " missing wells.\nOriginal files moved to " +
+                   folderName + ".\n" + colors.DEFAULT)
+
+files = listdir(directory)
+txtFiles = []
+
+# Get the txt files only
+for f in files:
+    if ".txt" in f:
+        txtFiles.append(f)
+
+print (colors.FINISH + "\nNow testing all files for missing wells...\n" +
+       colors.DEFAULT)
 
 # Check for the presence of every well in all of the files
 for i in range(0, len(txtFiles)):
+    print colors.TESTING + "Testing " + txtFiles[i] + colors.DEFAULT
     fileName = directory + "/" + txtFiles[i]
     allData = []
     wells = Set()
@@ -132,7 +155,7 @@ for i in range(0, len(txtFiles)):
         header = reader.next()
         allData.append(header)
         for row in reader:
-            if len(row) == len(header):
+            if len(row) == len(header) and row != header:
                 allData.append(row)
         for k in allData:
             if k != header:
@@ -141,26 +164,28 @@ for i in range(0, len(txtFiles)):
 
         missingWells = allWells.difference(wells)
 
-        if len(missingWells) == 0:
+        if len(missingWells) != 0:
             shutil.move(fileName, incFolderName)
 
             for q in missingWells:
                 newRow = ["-1", "-1", str(q[0]), str(q[1]), "N",
-                          "-1", "0", "-1", "-1", "-1", "-1", "-1",
-                          "-1", "-1", "-1", "-1", "-1", "-1", "-1",
-                          "-1", "-1", "-1", "-1", "-1", "-1", "-1"]
+                          "-1", "0"]
+                while len(newRow) < len(header):
+                    newRow.append("-1")
                 allData.append(newRow)
 
             name = nameFile2(txtFiles[i])
 
             newFile = open(name, "w+")
-            newFile.write("\t".join(header) + "\n")
 
             for l in allData:
                 newFile.write("\t".join(l) + "\n")
 
             newFile.close()
 
-        print ("Added " + str(len(missingWells)) + " lines to " + txtFiles[i] +
-               " to create " + name + ". Original file hase been moved to " +
-               incFolderName + ".\n")
+            print (colors.WARNING + "\nAdded " + str(len(missingWells)) +
+                   " lines to " + txtFiles[i] + " to create " + name +
+                   ".\nOriginal file hase been moved to " +
+                   incFolderName + ".\n" + colors.DEFAULT)
+
+print colors.FINISH + "\nComplete\n" + colors.DEFAULT
