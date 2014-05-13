@@ -12,7 +12,7 @@ require(reshape)
 ###############Change for each experiment###################
 
 #Path to experiment folder minus root dir
-dir.data = "Dropbox/HTA/Results/20140318_GWAS1b"
+dir.data = "Dropbox/HTA/Results/20140317_GWAS1a"
 
 ###############Change for each experiment###################
 
@@ -334,7 +334,7 @@ processPheno <- function(modplate, strains) {
     analysis <- data.frame(strain = as.character(strains), processed)
     analysis <- analysis[order(analysis$strain),]
     analysis <- analysis[order(analysis$row, analysis$col),]
-    analysis = analysis[analysis$meanTOF!=-1,]
+    analysis[analysis$meanTOF==-1,4:ncol(analysis)] = NA
     #analysis <- droplevels(na.omit(analysis))
     return(analysis)
 }
@@ -360,7 +360,7 @@ for(i in 1:length(score.plate))
 }
 
 
-
+#CONTROLS ASSUMED TO BE ALL THREE PLATES!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #creating dataframes of control population and growth (n, TOF/EXT 25/50/75/mean)
 ctrl.n <- data.frame(n1 = as.numeric(score.pheno[[1]]$norm.n),
                      n2 = as.numeric(score.pheno[[2]]$norm.n),
@@ -451,6 +451,7 @@ addCtrl <- function(score)
     return(score)
 }
 
+
 #score.proc = dataset of fully processed score datasets
 score.proc <-llply(score.pheno,function(x){addCtrl(x)})
 
@@ -461,6 +462,11 @@ for(i in 1:length(bad))
 {
     bad[[i]]<-paste0("p",bad[[i]])
     bad[[i]]<-get(bad[[i]])
+    badWellsDF = setup.df[[i]][setup.df[[i]]$sorted == 0,c(1,2)]
+    for(row in seq(1, nrow(badWellsDF))){
+        badWell = paste0(badWellsDF[row,1], badWellsDF[row,2])
+        bad[[i]] = append(bad[[i]], badWell)
+    }
 }
 
 #score.proc is list of totally processed score files
@@ -495,8 +501,25 @@ for(i in 1:length(score.proc)){
     score.proc[[i]] = as.data.frame(cbind(score.info[[i]],score.proc[[i]]))
 }
 
-
-
+possContam = function(procDataFrame){
+    strainMean = mean(procDataFrame$n[!is.na(procDataFrame$strain)], na.rm = TRUE)
+    strainSD = sd(procDataFrame$n[!is.na(procDataFrame$strain)], na.rm = TRUE)
+    washMean = mean(procDataFrame$n[is.na(procDataFrame$strain)], na.rm = TRUE)
+    washSD = sd(procDataFrame$n[is.na(procDataFrame$strain)], na.rm = TRUE)
+    possibleContam = c()
+    for(j in seq(1,nrow(procDataFrame),)){
+        if(!is.na(procDataFrame[j,"strain"])){
+            if(procDataFrame[j,"n"] > strainMean + (2*strainSD)){
+                row = as.character(procDataFrame[j, "row"])
+                col = as.numeric(procDataFrame[j, "col"])
+                adjacentWash = procDataFrame[procDataFrame$row==row & procDataFrame$col==(col+1),"n"]
+                if(adjacentWash > washMean + (2*washSD)){
+                    possibleContam = append(possibleContam, paste0(row, col))
+                }
+            }
+        }
+    } 
+}
 
 #Print out final reports and assemble final data frames
 for(i in 1:(length(score.plate)))
@@ -520,28 +543,7 @@ for(i in 1:(length(score.plate)))
     proc<-score.proc[[i]]
     saveRDS(proc,file=file.path(dir.existing,"temp","proc.rds"))
     
-    
-    strainMean = mean(proc$n[!is.na(proc$strain)])
-    strainSD = sd(proc$n[!is.na(proc$strain)])
-    
-    
-    washMean = mean(proc$n[is.na(proc$strain)])
-    washSD = sd(proc$n[is.na(proc$strain)])
-    
-    
-    possibleContam = c()
-    for(j in seq(1,nrow(proc),)){
-        if(!is.na(proc[j,"strain"])){
-            if(proc[j,"n"] > strainMean + (2*strainSD)){
-                row = as.character(proc[j, "row"])
-                col = as.numeric(proc[j, "col"])
-                adjacentWash = proc[proc$row==row & proc$col==(col+1),"n"]
-                if(adjacentWash > washMean + (2*washSD)){
-                    possibleContam = append(possibleContam, paste0(row, col))
-                }
-            }
-        }
-    } 
+    possibleContam = possContam(proc)
     
     saveRDS(possibleContam,file=file.path(dir.existing,"temp","possibleContam.rds"))
     
@@ -602,7 +604,7 @@ details = strsplit(dirName,"_")[[1]][2]
 
 name = paste0(details, "_complete.csv")
 
-write.csv(df, file.path(dir.existing,"results",name))
+write.csv(df, file.path(dir.existing,"results",name), row.names = FALSE)
 
 file.remove(file.path(dir.existing,"results",filelist))
 
