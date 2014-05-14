@@ -1,3 +1,5 @@
+#!/usr/local/bin/python
+
 # Import Tkinter to be able to graphically retrieve the directory
 from tkFileDialog import askdirectory
 from os import listdir, mkdir, rename
