@@ -74,6 +74,13 @@ plateno <- function(string)
     plate<-split[2]
 }
 
+experimentName = function(filePath){
+    splitfp = strsplit(filePath,"/")
+    dirName = splitfp[[1]][(length(splitfp[[1]]))]
+    details = strsplit(dirName,"_")[[1]][2]
+    return(details)
+}
+
 
 #Extract the metadata info
 info = function(filePath){
@@ -150,6 +157,9 @@ procSetup <- function(file, tofmin=20, tofmax=2000, extmin=20, extmax=5000) {
 #For every file in the above list of files, process the setup file with procSetup
 setup.df<-llply(setup.filelist,function(x){procSetup(x)})
 
+fileName = file.path(dir.root,dir.data,"results",paste0(experimentName(dir.data),"_rawSetupData.Rds"))
+saveRDS(score.modplate, fileName)
+
 
 #Do the same with the scoring data
 setwd(file.path(dir.root,dir.data,dir.score))
@@ -177,6 +187,8 @@ sortertoDF <- function(file, tofmin=20, tofmax=2000, extmin=20, extmax=5000) {
 #Create a list of scoring results with bubbles sccounted for with the SVM
 score.modplate<-llply(score.filelist,function(x){sortertoDF(x)})
 
+fileName = file.path(dir.root,dir.data,"results",paste0(experimentName(dir.data),"_rawScoringData.Rds"))
+saveRDS(score.modplate, fileName)
 
 setup.filelist<-as.list(setup.filelist)
 names(setup.filelist)<-setup.plate
@@ -220,14 +232,15 @@ for(i in 1:(length(setup.plate)))
     setup.proc<-setup.df[[i]]
     saveRDS(setup.proc,file=file.path(dir.existing,"temp","setup-proc.rds"))
     
-    setup.proc[is.na(setup.proc)]<-0
+    setup.proc[is.na(setup.proc)]<--1
     setup.proc[-1:-4]<-round(setup.proc[,-1:-4],1) 
     
-    sorted1 <- subset(setup.proc, sorted==1|sorted==0)
-    sorted2 <- subset(setup.proc, sorted==2)
-    sorted3 <- subset(setup.proc,sorted==3)
-    
-    plot.setup.sorted<- ggplot(sorted1)+geom_rect(aes(xmin=0,xmax=5,ymin=0,ymax=5),fill="red")+geom_rect(data=sorted2,aes(xmin=0,xmax=5,ymin=0,ymax=5),fill="yellow")+geom_rect(data=sorted3,aes(xmin=0,xmax=5,ymin=0,ymax=5),fill="green")+facet_grid(row~col) +geom_text(aes(x=2.5,y=2.5,label=sorted))+geom_text(data=sorted2,aes(x=2.5,y=2.5,label=sorted))+geom_text(data=sorted3,aes(x=2.5,y=2.5,label=sorted))+presentation+theme(axis.ticks.x=element_blank(), axis.ticks.y=element_blank(), axis.text.x=element_blank(), axis.text.y=element_blank())+xlab("columns")+ylab("rows")+labs(title=paste0("Setup p",setup.plate[[i]]," # Sorted"))
+    plot.setup.sorted<- ggplot(setup.proc)+geom_rect(aes(xmin=0,xmax=5,ymin=0,ymax=5,fill=sorted))+
+                        scale_fill_gradient2(high = "green", low = "red", mid = "yellow", midpoint = ceiling((max(setup.proc$sorted)-min(setup.proc$sorted))/2))+
+                        facet_grid(row~col)+geom_text(aes(x=2.5,y=2.5,label=sorted))+
+                        presentation+
+                        theme(axis.ticks.x=element_blank(), axis.ticks.y=element_blank(), axis.text.x=element_blank(), axis.text.y=element_blank())+
+                        xlab("columns")+ylab("rows")+labs(title=paste0("Setup p",setup.plate[[i]]," # Sorted"))
     saveRDS(plot.setup.sorted,file=file.path(dir.existing,"temp","plot-setup-sorted.rds"))
     
     
@@ -270,7 +283,7 @@ for(i in 1:(length(setup.plate)))
 
 #added quantiles of minEXT, q05_EXT through q95_EXT, maxEXT
 processPheno <- function(modplate, strains) {
-    processed <- ddply(.data=modplate[modplate$call50=="worm",], .variables=c("row", "col"),
+    processed <- ddply(.data=modplate[modplate$call50=="worm" | modplate$TOF == -1,], .variables=c("row", "col"),
                        .fun=function(x){c(n=length(x$TOF),
                                           meanTOF=mean(x$TOF),
                                           medianTOF=median(x$TOF),
@@ -334,7 +347,7 @@ processPheno <- function(modplate, strains) {
     analysis <- data.frame(strain = as.character(strains), processed)
     analysis <- analysis[order(analysis$strain),]
     analysis <- analysis[order(analysis$row, analysis$col),]
-    analysis[analysis$meanTOF==-1,4:ncol(analysis)] = NA
+    analysis[as.numeric(analysis$meanTOF)==-1 | is.na(analysis$meanTOF),4:ncol(analysis)] = NA
     #analysis <- droplevels(na.omit(analysis))
     return(analysis)
 }
@@ -508,7 +521,7 @@ possContam = function(procDataFrame){
     washSD = sd(procDataFrame$n[is.na(procDataFrame$strain)], na.rm = TRUE)
     possibleContam = c()
     for(j in seq(1,nrow(procDataFrame),)){
-        if(!is.na(procDataFrame[j,"strain"])){
+        if(!is.na(procDataFrame[j,"strain"] & !is.na(procDataFrame[j,"n"]))){
             if(procDataFrame[j,"n"] > strainMean + (2*strainSD)){
                 row = as.character(procDataFrame[j, "row"])
                 col = as.numeric(procDataFrame[j, "col"])
@@ -559,7 +572,7 @@ for(i in 1:(length(score.plate)))
     contam<-get(plate)
     saveRDS(contam,file=file.path(dir.existing,"temp","contam.rds"))
     
-    proc[is.na(proc)]<-0
+    proc[is.na(proc)]<--1
     proc$norm.n<-round(proc$norm.n,0)
     proc$mean.normred<-round(proc$mean.normred,2)
     proc$median.normred<-round(proc$median.normred,2)
