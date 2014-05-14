@@ -12,7 +12,7 @@ require(reshape)
 ###############Change for each experiment###################
 
 #Path to experiment folder minus root dir
-dir.data = "Dropbox/HTA/Results/20140317_GWAS1a"
+dir.data = "Dropbox/HTA/Results/20140422_N2timecourse"
 
 ###############Change for each experiment###################
 
@@ -158,7 +158,7 @@ procSetup <- function(file, tofmin=20, tofmax=2000, extmin=20, extmax=5000) {
 setup.df<-llply(setup.filelist,function(x){procSetup(x)})
 
 fileName = file.path(dir.root,dir.data,"results",paste0(experimentName(dir.data),"_rawSetupData.Rds"))
-saveRDS(score.modplate, fileName)
+saveRDS(setup.df, fileName)
 
 
 #Do the same with the scoring data
@@ -366,6 +366,11 @@ for(i in 1:length(score.plate))
 {
     setup<-setup.df[[i]]
     score<-score.pheno[[i]]
+    n = score$n
+    sorted = setup$sorted
+    if (length(n) != length(sorted)){
+        stop("The lengths of the setup and score data frames do not match.\nRun PlateStitcher.py on both the setup and score data and try again.")
+    }
     norm<-score$n/setup$sorted
     norm<-ifelse(is.infinite(norm),NA,norm)
     score$norm.n<-norm
@@ -580,6 +585,7 @@ for(i in 1:(length(score.plate)))
     proc$meanEXT<-round(proc$meanEXT,1)
     
     plot.score.pop<-ggplot(proc)+geom_rect(aes(xmin=0,xmax=5,ymin=0,ymax=5,fill=norm.n))+facet_grid(row~col)+geom_text(aes(x=2.5,y=2.5,label=norm.n,colour="white"))+presentation+theme(axis.ticks.x=element_blank(), axis.ticks.y=element_blank(), axis.text.x=element_blank(), axis.text.y=element_blank())+xlab("columns")+ylab("rows")+labs(title=paste0("Score p",score.plate[[i]]," Population"))
+    
     saveRDS(plot.score.pop,file=file.path(dir.existing,"temp","plot-score-pop.rds"))
     
     plot.score.red<-ggplot(proc)+geom_rect(aes(xmin=0,xmax=5,ymin=0,ymax=5),fill=NA)+facet_grid(row~col)+geom_text(aes(x=1,y=4,label=mean.normred))+geom_text(aes(x=4,y=1,label=median.normred))+presentation+theme(axis.ticks.x=element_blank(), axis.ticks.y=element_blank(), axis.text.x=element_blank(), axis.text.y=element_blank())+xlab("columns")+ylab("rows")+labs(title=paste0("Score p",score.plate[[i]]," Red Fluorescence"))
