@@ -1,6 +1,6 @@
 # Import Tkinter to be able to graphically retrieve the directory
 from tkFileDialog import askdirectory
-from os import listdir, mkdir
+from os import listdir, mkdir, rename
 from os.path import exists
 from sets import Set
 import re
@@ -20,6 +20,8 @@ class colors:
 directory = askdirectory(initialdir="~/")
 files = listdir(directory)
 txtFiles = []
+
+dirName = directory.split("/")[-1]
 
 # Get the txt files only
 for f in files:
@@ -100,7 +102,9 @@ for i in range(0, len(duplicates)):
                         for row in reader:
                             if len(row) == len(header):
                                 allData.append(row)
-                    shutil.move(fileName, folderName)
+                    newName = fileName.split(".")[0] + "_" + dirName + ".txt"
+                    rename(fileName, newName)
+                    shutil.move(newName, folderName)
 
             for k in allData:
                 if k == header:
@@ -165,7 +169,9 @@ for i in range(0, len(txtFiles)):
         missingWells = allWells.difference(wells)
 
         if len(missingWells) != 0:
-            shutil.move(fileName, incFolderName)
+            newName = fileName.split(".")[0] + "_" + dirName + ".txt"
+            rename(fileName, newName)
+            shutil.move(newName, incFolderName)
 
             for q in missingWells:
                 newRow = ["-1", "-1", str(q[0]), str(q[1]), "N",
