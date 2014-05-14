@@ -1,4 +1,4 @@
-```{r echo=FALSE}
+```{r echo=FALSE, warning=FALSE}
 #Change this line to match the created temporary directory
 dir = file.path(dir.existing, "temp")
 
@@ -13,21 +13,21 @@ File name: `r file.setup`
 
 
 Strains:
-```{r echo=FALSE}
+```{r echo=FALSE, warning=FALSE}
 options(width = 110)
 strains=readRDS(file.path(dir,"strains.rds"))
 strains
 ```
 
 Contaminated wells:
-```{r echo=FALSE}
+```{r echo=FALSE, warning=FALSE}
 contam=readRDS(file.path(dir,"contam.rds"))
 contam
 ```
 
 
 Number of L4s sorted:
-```{r echo=FALSE,fig.width=15,fig.height=10}
+```{r echo=FALSE,fig.width=15,fig.height=10, warning=FALSE}
 plot.setup.sorted=readRDS(file.path(dir,"plot-setup-sorted.rds"))
 plot.setup.sorted
 ```
@@ -35,7 +35,7 @@ plot.setup.sorted
 
 
 Population size (factored color):
-```{r echo=FALSE,fig.width=15,fig.height=10}
+```{r echo=FALSE,fig.width=15,fig.height=10, warning=FALSE}
 plot.setup.pop=readRDS(file.path(dir,"plot-setup-pop.rds"))
 plot.setup.pop
 ```
@@ -45,14 +45,14 @@ plot.setup.pop
 - Bottom left: TOF median
 - Top right: EXT mean
 - Bottom right: EXT median
-```{r echo=FALSE,fig.width=15,fig.height=10}
+```{r echo=FALSE,fig.width=15,fig.height=10, warning=FALSE}
 plot.setup.tofext=readRDS(file.path(dir,"plot-setup-tofext.rds"))
 plot.setup.tofext
 ```
 
 
 procSetup dataset:
-```{r echo=FALSE}
+```{r echo=FALSE, warning=FALSE}
 setup.proc=readRDS(file.path(dir,"setup-proc.rds"))
 setup.proc
 ```
