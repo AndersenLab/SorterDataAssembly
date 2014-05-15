@@ -12,7 +12,7 @@ require(reshape)
 ###############Change for each experiment###################
 
 #Path to experiment folder minus root dir
-dir.data = "Dropbox/HTA/Results/20140422_N2timecourse"
+dir.data = "Dropbox/HTA/Results/20140317_GWAS1a"
 
 ###############Change for each experiment###################
 
@@ -37,6 +37,9 @@ file.contam = "contamination.R"
 
 #Path to strains file minus root dir
 file.strains = "strains.R"
+
+#Path to controls file minus root dir
+file.controls = "controls.R"
 
 #Path to setup dir minus root dir
 dir.setup = "setup"
@@ -380,98 +383,150 @@ for(i in 1:length(score.plate))
 
 #CONTROLS ASSUMED TO BE ALL THREE PLATES!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #creating dataframes of control population and growth (n, TOF/EXT 25/50/75/mean)
-ctrl.n <- data.frame(n1 = as.numeric(score.pheno[[1]]$norm.n),
-                     n2 = as.numeric(score.pheno[[2]]$norm.n),
-                     n3 = as.numeric(score.pheno[[3]]$norm.n))
-ctrl.n$m<-rowMeans(ctrl.n,na.rm=T)
+source(file.path(dir.root, dir.data, file.controls))
 
-ctrl.q25_TOF <- data.frame(n1 = as.numeric(score.pheno[[1]]$q25_TOF),
-                           n2 = as.numeric(score.pheno[[2]]$q25_TOF),
-                           n3 = as.numeric(score.pheno[[3]]$q25_TOF))
-ctrl.q25_TOF$m<-rowMeans(ctrl.q25_TOF,na.rm=T)
+controlDFs = list()
 
-ctrl.q50_TOF <- data.frame(n1 = as.numeric(score.pheno[[1]]$medianTOF),
-                           n2 = as.numeric(score.pheno[[2]]$medianTOF),
-                           n3 = as.numeric(score.pheno[[3]]$medianTOF))
-ctrl.q50_TOF$m<-rowMeans(ctrl.q50_TOF,na.rm=T)
+finalPlates = list()
+length(finalPlates) = length(score.modplate)
 
-ctrl.q75_TOF <- data.frame(n1 = as.numeric(score.pheno[[1]]$q75_TOF),
-                           n2 = as.numeric(score.pheno[[2]]$q75_TOF),
-                           n3 = as.numeric(score.pheno[[3]]$q75_TOF))
-ctrl.q75_TOF$m<-rowMeans(ctrl.q75_TOF,na.rm=T)
-
-ctrl.mean_TOF <- data.frame(n1 = as.numeric(score.pheno[[1]]$meanTOF),
-                            n2 = as.numeric(score.pheno[[2]]$meanTOF),
-                            n3 = as.numeric(score.pheno[[3]]$meanTOF))
-ctrl.mean_TOF$m<-rowMeans(ctrl.mean_TOF,na.rm=T)
-
-ctrl.q25_EXT <- data.frame(n1 = as.numeric(score.pheno[[1]]$q25_EXT),
-                           n2 = as.numeric(score.pheno[[2]]$q25_EXT),
-                           n3 = as.numeric(score.pheno[[3]]$q25_EXT))
-ctrl.q25_EXT$m<-rowMeans(ctrl.q25_EXT,na.rm=T)
-
-ctrl.q50_EXT <- data.frame(n1 = as.numeric(score.pheno[[1]]$medianEXT),
-                           n2 = as.numeric(score.pheno[[2]]$medianEXT),
-                           n3 = as.numeric(score.pheno[[3]]$medianTOF))
-ctrl.q50_EXT$m<-rowMeans(ctrl.q50_EXT,na.rm=T)
-
-ctrl.q75_EXT <- data.frame(n1 = as.numeric(score.pheno[[1]]$q75_EXT),
-                           n2 = as.numeric(score.pheno[[2]]$q75_EXT),
-                           n3 = as.numeric(score.pheno[[3]]$q75_EXT))
-ctrl.q75_EXT$m<-rowMeans(ctrl.q75_EXT,na.rm=T)
-
-ctrl.mean_EXT <- data.frame(n1 = as.numeric(score.pheno[[1]]$meanEXT),
-                            n2 = as.numeric(score.pheno[[2]]$meanEXT),
-                            n3 = as.numeric(score.pheno[[3]]$meanEXT))
-ctrl.mean_EXT$m<-rowMeans(ctrl.mean_EXT,na.rm=T)
-
-
-#adding control condition columns and regressing out control conditions
-addCtrl <- function(score)
-{
-    score$ctrl.n <- ctrl.n$m
-    score[is.na(score)]<-0
-    resid.n <- residuals(lm(score$norm.n~score$ctrl.n))
-    score$resid.n <- resid.n
-    
-    score$ctrl.q25_TOF <- ctrl.q25_TOF$m
-    resid.q25_TOF <- residuals(lm(score$q25_TOF~score$ctrl.q25_TOF))
-    score$resid.q25_TOF <- resid.q25_TOF
-    
-    score$ctrl.q50_TOF <- ctrl.q50_TOF$m
-    resid.q50_TOF <- residuals(lm(score$medianTOF~score$ctrl.q50_TOF))
-    score$resid.q50_TOF <- resid.q50_TOF
-    
-    score$ctrl.q75_TOF <- ctrl.q75_TOF$m
-    resid.q75_TOF <- residuals(lm(score$q75_TOF~score$ctrl.q75_TOF))
-    score$resid.q75_TOF <- resid.q75_TOF
-    
-    score$ctrl.mean_TOF <- ctrl.mean_TOF$m
-    resid.mean_TOF <- residuals(lm(score$meanTOF~score$ctrl.mean_TOF))
-    score$resid.mean_TOF <- resid.mean_TOF
-    
-    score$ctrl.q25_EXT <- ctrl.q25_EXT$m
-    resid.q25_EXT <- residuals(lm(score$q25_EXT~score$ctrl.q25_EXT))
-    score$resid.q25_EXT <- resid.q25_EXT
-    
-    score$ctrl.q50_EXT <- ctrl.q50_EXT$m
-    resid.q50_EXT <- residuals(lm(score$medianEXT~score$ctrl.q50_EXT))
-    score$resid.q50_EXT <- resid.q50_EXT
-    
-    score$ctrl.q75_EXT <- ctrl.q75_EXT$m
-    resid.q75_EXT <- residuals(lm(score$q75_EXT~score$ctrl.q75_EXT))
-    score$resid.q75_EXT <- resid.q75_EXT
-    
-    score$ctrl.mean_EXT <- ctrl.mean_EXT$m
-    resid.mean_EXT <- residuals(lm(score$meanEXT~score$ctrl.mean_EXT))
-    score$resid.mean_EXT <- resid.mean_EXT
-    
-    return(score)
+for(i in 1:length(controlPlates)){
+    controls = controlPlates[[i]]
+    means = list()
+    length(means) = ncol(score.pheno[[controls[1]]])
+    for(j in 1:length(controls)){
+        plate = score.pheno[[controls[j]]]
+        finalPlates[[controls[j]]] = plate
+        for(k in seq(4,ncol(plate))){
+            means[[k]] = cbind(means[[k]], plate[,k])
+        }
+    }
+    controlDF = plate[,1:3]
+    for(j in 4:ncol(score.pheno[[controls[1]]])){
+        controlDF = as.data.frame(cbind(controlDF, rowMeans(means[[j]], na.rm = TRUE)))
+    }
+    colnames(controlDF) = colnames(score.pheno[[controls[1]]])
+    controlDF = as.data.frame(controlDF)
+    controlDFs = append(controlDFs, list(controlDF))
 }
 
+rsq = data.frame()
 
-#score.proc = dataset of fully processed score datasets
-score.proc <-llply(score.pheno,function(x){addCtrl(x)})
+for(i in 1:length(testPlates)){
+    plates = testPlates[[i]]
+    controlPlate = controlDFs[[i]]
+    for(j in 1:length(plates)){
+        plate = score.pheno[[plates[j]]]
+        for(k in 4:ncol(plate)){
+            plate = cbind(plate, residuals(lm(plate[,k]~controlPlate[,k], na.action = na.exclude)),
+                          residuals(lm(plate[,k]~plate$n, na.action = na.exclude)),
+                          residuals(lm(plate[,k]~plate$n+controlPlate[,k], na.action = na.exclude)) #Do you want additive or interaction effects??
+                          )
+            colnames(plate)[ncol(plate)-2] = paste0("resid.control.",colnames(plate)[k])
+            colnames(plate)[ncol(plate)-1] = paste0("resid.n.",colnames(plate)[k])
+            colnames(plate)[ncol(plate)-0] = paste0("resid.control.n.",colnames(plate)[k])
+            rsq = rbind(rsq, data.frame(Variable = paste0("resid.control.",colnames(plate)[k]), RSquared = summary(lm(plate[,k]~controlPlate[,k], na.action = na.exclude))$r.squared))
+            rsq = rbind(rsq, data.frame(Variable = paste0("resid.n.",colnames(plate)[k]), RSquared = summary(lm(plate[,k]~plate$n, na.action = na.exclude))$r.squared))
+            rsq = rbind(rsq, data.frame(Variable = paste0("resid.control.n.",colnames(plate)[k]), RSquared = summary(lm(plate[,k]~plate$n+controlPlate[,k], na.action = na.exclude))$r.squared))
+        }
+        finalPlates[[plates[j]]] = plate
+    }
+}
+
+score.proc = finalPlates
+
+# ctrl.n <- data.frame(n1 = as.numeric(score.pheno[[1]]$norm.n),
+#                      n2 = as.numeric(score.pheno[[2]]$norm.n),
+#                      n3 = as.numeric(score.pheno[[3]]$norm.n))
+# ctrl.n$m<-rowMeans(ctrl.n,na.rm=T)
+# 
+# ctrl.q25_TOF <- data.frame(n1 = as.numeric(score.pheno[[1]]$q25_TOF),
+#                            n2 = as.numeric(score.pheno[[2]]$q25_TOF),
+#                            n3 = as.numeric(score.pheno[[3]]$q25_TOF))
+# ctrl.q25_TOF$m<-rowMeans(ctrl.q25_TOF,na.rm=T)
+# 
+# ctrl.q50_TOF <- data.frame(n1 = as.numeric(score.pheno[[1]]$medianTOF),
+#                            n2 = as.numeric(score.pheno[[2]]$medianTOF),
+#                            n3 = as.numeric(score.pheno[[3]]$medianTOF))
+# ctrl.q50_TOF$m<-rowMeans(ctrl.q50_TOF,na.rm=T)
+# 
+# ctrl.q75_TOF <- data.frame(n1 = as.numeric(score.pheno[[1]]$q75_TOF),
+#                            n2 = as.numeric(score.pheno[[2]]$q75_TOF),
+#                            n3 = as.numeric(score.pheno[[3]]$q75_TOF))
+# ctrl.q75_TOF$m<-rowMeans(ctrl.q75_TOF,na.rm=T)
+# 
+# ctrl.mean_TOF <- data.frame(n1 = as.numeric(score.pheno[[1]]$meanTOF),
+#                             n2 = as.numeric(score.pheno[[2]]$meanTOF),
+#                             n3 = as.numeric(score.pheno[[3]]$meanTOF))
+# ctrl.mean_TOF$m<-rowMeans(ctrl.mean_TOF,na.rm=T)
+# 
+# ctrl.q25_EXT <- data.frame(n1 = as.numeric(score.pheno[[1]]$q25_EXT),
+#                            n2 = as.numeric(score.pheno[[2]]$q25_EXT),
+#                            n3 = as.numeric(score.pheno[[3]]$q25_EXT))
+# ctrl.q25_EXT$m<-rowMeans(ctrl.q25_EXT,na.rm=T)
+# 
+# ctrl.q50_EXT <- data.frame(n1 = as.numeric(score.pheno[[1]]$medianEXT),
+#                            n2 = as.numeric(score.pheno[[2]]$medianEXT),
+#                            n3 = as.numeric(score.pheno[[3]]$medianTOF))
+# ctrl.q50_EXT$m<-rowMeans(ctrl.q50_EXT,na.rm=T)
+# 
+# ctrl.q75_EXT <- data.frame(n1 = as.numeric(score.pheno[[1]]$q75_EXT),
+#                            n2 = as.numeric(score.pheno[[2]]$q75_EXT),
+#                            n3 = as.numeric(score.pheno[[3]]$q75_EXT))
+# ctrl.q75_EXT$m<-rowMeans(ctrl.q75_EXT,na.rm=T)
+# 
+# ctrl.mean_EXT <- data.frame(n1 = as.numeric(score.pheno[[1]]$meanEXT),
+#                             n2 = as.numeric(score.pheno[[2]]$meanEXT),
+#                             n3 = as.numeric(score.pheno[[3]]$meanEXT))
+# ctrl.mean_EXT$m<-rowMeans(ctrl.mean_EXT,na.rm=T)
+# 
+# 
+# #adding control condition columns and regressing out control conditions
+# addCtrl <- function(score)
+# {
+#     score$ctrl.n <- ctrl.n$m
+#     score[is.na(score)]<-0
+#     resid.n <- residuals(lm(score$norm.n~score$ctrl.n))
+#     score$resid.n <- resid.n
+#     
+#     score$ctrl.q25_TOF <- ctrl.q25_TOF$m
+#     resid.q25_TOF <- residuals(lm(score$q25_TOF~score$ctrl.q25_TOF))
+#     score$resid.q25_TOF <- resid.q25_TOF
+#     
+#     score$ctrl.q50_TOF <- ctrl.q50_TOF$m
+#     resid.q50_TOF <- residuals(lm(score$medianTOF~score$ctrl.q50_TOF))
+#     score$resid.q50_TOF <- resid.q50_TOF
+#     
+#     score$ctrl.q75_TOF <- ctrl.q75_TOF$m
+#     resid.q75_TOF <- residuals(lm(score$q75_TOF~score$ctrl.q75_TOF))
+#     score$resid.q75_TOF <- resid.q75_TOF
+#     
+#     score$ctrl.mean_TOF <- ctrl.mean_TOF$m
+#     resid.mean_TOF <- residuals(lm(score$meanTOF~score$ctrl.mean_TOF))
+#     score$resid.mean_TOF <- resid.mean_TOF
+#     
+#     score$ctrl.q25_EXT <- ctrl.q25_EXT$m
+#     resid.q25_EXT <- residuals(lm(score$q25_EXT~score$ctrl.q25_EXT))
+#     score$resid.q25_EXT <- resid.q25_EXT
+#     
+#     score$ctrl.q50_EXT <- ctrl.q50_EXT$m
+#     resid.q50_EXT <- residuals(lm(score$medianEXT~score$ctrl.q50_EXT))
+#     score$resid.q50_EXT <- resid.q50_EXT
+#     
+#     score$ctrl.q75_EXT <- ctrl.q75_EXT$m
+#     resid.q75_EXT <- residuals(lm(score$q75_EXT~score$ctrl.q75_EXT))
+#     score$resid.q75_EXT <- resid.q75_EXT
+#     
+#     score$ctrl.mean_EXT <- ctrl.mean_EXT$m
+#     resid.mean_EXT <- residuals(lm(score$meanEXT~score$ctrl.mean_EXT))
+#     score$resid.mean_EXT <- resid.mean_EXT
+#     
+#     return(score)
+# }
+# 
+# 
+# #score.proc = dataset of fully processed score datasets
+# score.proc <-llply(score.pheno,function(x){addCtrl(x)})
 
 
 
