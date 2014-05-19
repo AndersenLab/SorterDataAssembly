@@ -3,7 +3,7 @@ Sorter Data Assembly and Report Generation
 
 PlateStitcher.py
 ----------------
-This program is run on a directory containing either the raw setup or raw score files for the high throughput assays. It is designed such that it can, and should, be run from a directory external to that in which the data files are stored.
+This program is run on a directory containing either the raw setup or raw score files for the high throughput assays. It is designed such that it can, and should, be run from a directory external to that in which the data files are stored. *This program should be run on both the setup and score files for each assay before the data are run through the report generator R script.*
 
 ####Naming Conventions
 Naming conventions are critical to the correct execution of this code. The convention is outlined below:
@@ -12,7 +12,8 @@ Naming conventions are critical to the correct execution of this code. The conve
 	+ Plate number should always be the letter "p" followed immediately by the two digit representation of the number (i.e. "08" or "15")
 	+ Be careful of spelling errors in the drug name, though this is not critical as the program will prompt you before stitching together plates with matching numbers but different drug names
 	+ Anything in the notes section of the name will be ignored by the program
-	+ The file ***must*** be saved as .txt
+	+ The file ***must*** be saved as .
+	+ Plate number and drug name ***must*** be separated by an underscore
 
 ####Usage
 1. cd into directory containing the PlateStitcher.py script
