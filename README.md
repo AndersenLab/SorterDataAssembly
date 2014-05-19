@@ -35,6 +35,39 @@ Data on the date, round, description, assay, plate number, and drug of each expe
 	+ Month should be the two digit representation of the month
 	+ Day should be the two digit representation of the day
 	+ An underscore should separate the date from the rest of the info, not a dash as was used previously
-	+Round must be a number, though the number digits associated with that number do not matter ("01" is the same as "1")
+	+ Round must be a number, though the number digits associated with that number do not matter ("01" is the same as "1")
 	+ Assay should be a letter for the assay round that is being completed ("a" for 1st, "b" for secound, etc.)
 	+ Example: **20140317_GWAS1a**
+
+####Dependencies:
+1. All of the following files should be in the same directory as the SetupAndScoreReportGenerator.R file:
+
++ MasterSetupReport.Rmd - Markdown template for the setup reports
++ MasterScoreReport.Rmd - Markdown template for the score reports
++ PresentationStyle.RData - Presentation style specs for plots in the reports
++ ProcessSorterFxns_NU_TCS.R - File containing most of the functions to process the raw sorter data
+	+ Make sure to use **ProcessSorterFxns_NU_TCS.R** and not **ProcessSorterFxns_NU.R** as the latter does not have the altered removeWells function that works with the new code
+
+2. All of the following files and directories should be in each experiment directory:
+
++ contamination.R - R file listing each plate and the associated contaminated wells
++ controls.R - R file listing each control plate and the associated drug plates it serves as the control for
++ strains.R - R file with a vector containing the names of the strains on each plate in order by row
++ setup - Directory containing all of the raw setup files
++ score - Directory containing all of the raw score files
+
+####Usage
+1. Edit the first line in the SetupAndScoreReportGenerator.R so that the "dataDirs" variable is a vector that contains all of the directories for the experiment
+	+ For example, you would enter the directories for GWAS1a and GWAS1b because, collectively, they make up the GWAS1 experiment
+2. Open R and source the SetupAndScoreReportGenerator.R file
+
+
+
+
+
+
+
+
+
+
+
