@@ -40,21 +40,21 @@ Data on the date, round, description, assay, plate number, and drug of each expe
 	+ Example: **20140317_GWAS1a**
 
 ####Dependencies:
-1. All of the following files should be in the same directory as the SetupAndScoreReportGenerator.R file:
+All of the following files should be in the same directory as the SetupAndScoreReportGenerator.R file:
 
-	+ MasterSetupReport.Rmd - Markdown template for the setup reports
-	+ MasterScoreReport.Rmd - Markdown template for the score reports
-	+ PresentationStyle.RData - Presentation style specs for plots in the reports
-	+ ProcessSorterFxns_NU_TCS.R - File containing most of the functions to process the raw sorter data
-		+ Make sure to use **ProcessSorterFxns_NU_TCS.R** and not **ProcessSorterFxns_NU.R** as the latter does not have the altered removeWells function that works with the new code
++ MasterSetupReport.Rmd - Markdown template for the setup reports
++ MasterScoreReport.Rmd - Markdown template for the score reports
++ PresentationStyle.RData - Presentation style specs for plots in the reports
++ ProcessSorterFxns_NU_TCS.R - File containing most of the functions to process the raw sorter data
+	+ Make sure to use **ProcessSorterFxns_NU_TCS.R** and not **ProcessSorterFxns_NU.R** as the latter does not have the altered removeWells function that works with the new code
 
-2. All of the following files and directories should be in each experiment directory:
+All of the following files and directories should be in each experiment directory:
 
-	+ contamination.R - R file listing each plate and the associated contaminated wells
-	+ controls.R - R file listing each control plate and the associated drug plates it serves as the control for
-	+ strains.R - R file with a vector containing the names of the strains on each plate in order by row
-	+ setup - Directory containing all of the raw setup files
-	+ score - Directory containing all of the raw score files
++ contamination.R - R file listing each plate and the associated contaminated wells
++ controls.R - R file listing each control plate and the associated drug plates it serves as the control for
++ strains.R - R file with a vector containing the names of the strains on each plate in order by row
++ setup - Directory containing all of the raw setup files
++ score - Directory containing all of the raw score files
 
 ####Usage
 1. Edit the first line in the SetupAndScoreReportGenerator.R so that the "dataDirs" variable is a vector that contains all of the directories for the experiment
