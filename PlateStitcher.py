@@ -216,7 +216,15 @@ def missingFiles(directoryList, header):
 # Get the directory
 #dirList = ["~/Dropbox/HTA/Results/20140428_RIAILs1", "~/Dropbox/HTA/Results/20140429_RIAILs2", "~/Dropbox/HTA/Results/20140505_RIAILs3", "~/Dropbox/HTA/Results/20140506_RIAILs4", "~/Dropbox/HTA/Results/20140512_RIAILs5", "~/Dropbox/HTA/Results/20140513_RIAILs6"]
 
+
+
+############ EDIT HERE #######################
+
+
 dirList = ["~/Dropbox/HTA/Results/20140407_GWAS4a", "~/Dropbox/HTA/Results/20140408_GWAS4b"]
+
+
+##############################################
 
 finalDirList = []
 for directory in dirList:
