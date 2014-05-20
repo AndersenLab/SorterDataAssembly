@@ -39,7 +39,7 @@ Data on the date, round, description, assay, plate number, and condition of each
 	+ Day should be the two digit representation of the day
 	+ An underscore should separate the date from the rest of the info, not a dash as was used previously
 	+ Round must be a number, though the number digits associated with that number do not matter ("01" is the same as "1")
-	+ Assay should be a letter for the assay round that is being completed ("a" for first, "b" for secound, etc.)
+	+ Assay should be a letter for the assay round that is being completed ("a" for first, "b" for second, etc.)
 	+ Example: **20140317_GWAS1a**
 
 ####Dependencies:
@@ -104,7 +104,7 @@ controlPlates <- list(1, 11)
 testPlates <- list(2:10, 12:20)
 ```
 
-If the test plates or control plates are not sequenctial, they must be inserted into the list by vectors. In this example, plates 1 and 3 control for plates 4, 6, and 8 while plates 2 and 10 control for plates 5, 7, and 9:
+If the test plates or control plates are not sequential, they must be inserted into the list by vectors. In this example, plates 1 and 3 control for plates 4, 6, and 8 while plates 2 and 10 control for plates 5, 7, and 9:
 
 ```r
 controlPlates <- list(c(1, 3), c(2, 10))
