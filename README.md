@@ -5,7 +5,7 @@ PlateStitcher.py
 ----------------
 This program is run on a directory containing either the raw setup or raw score files for the high throughput assays. It is designed such that it can, and should, be run from a directory external to that in which the data files are stored. *This program should be run on both the setup and score files for each assay before the data are run through the report generator R script.*
 
-####Naming Conventions
+###Naming Conventions
 Naming conventions are critical to the correct execution of this code. The convention is outlined below:
 
 + All plates should be named in the following manner: **plateNumber_condition_notes.txt**
@@ -19,7 +19,7 @@ Naming conventions are critical to the correct execution of this code. The conve
 		+ The notes section of the name is reserved for name appendices from the PlateStitcher.py script
 		+ **File names should only contain one underscore (to separate the date and condition name) when originally saved**
 
-####Usage
+###Usage
 1. Edit the script at the bottom of the file so that "dirList" contains all parent directories for all setup and score data from one entire experiment
 2. In terminal, cd into directory containing the PlateStitcher.py script
 3. Execute $python PlateStitcher.py
@@ -42,7 +42,7 @@ Data on the date, round, description, assay, plate number, and condition of each
 	+ Assay should be a letter for the assay round that is being completed ("a" for first, "b" for second, etc.)
 	+ Example: **20140317_GWAS1a**
 
-####Dependencies:
+###Dependencies:
 All of the following files should be in the same directory as the SetupAndScoreReportGenerator.R file:
 
 + MasterSetupReport.Rmd - Markdown template for the setup reports
@@ -59,10 +59,10 @@ All of the following files and directories should be in each experiment director
 + setup - Directory containing all of the raw setup files
 + score - Directory containing all of the raw score files
 
-####Human Input Files:
+###Human Input Files:
 The following describes the setup for the three human input files. All three file names are case sensitive, including the file extension (must be ".R" not ".r").
 
-#####contamination.R
+####contamination.R
 
 This file contains a line for each plate following the above plate numbering convention, followed by the assignment of a vector with the well numbers that had contamination. An example of the head of one of these files is below:
 
@@ -79,7 +79,7 @@ p09 <- c("A9", "G1", "G3", "H1")
 p10 <- c("")
 ```
 
-#####controls.R
+####controls.R
 
 This file contains two lists, controlPlates and testPlates. In controlPlates, the control plates are listed in groups based on which plates they control for. In testPlates, the test plates are listed in the same order as the corresponding control plates.
 
@@ -111,7 +111,7 @@ controlPlates <- list(c(1, 3), c(2, 10))
 testPlates <- list(c(4, 6, 8), c(5, 7, 9))
 ```
 
-#####strains.R
+####strains.R
 
 This file consists of a row-wise vector of all of the strains on the plate. The list is created right to left then down the plate, as if reading a book from A1 to H12. An example is given below:
 
@@ -126,7 +126,7 @@ strains <- c("CX11285", NA, "ED3048", NA, "JU1200", NA, "CX11315", NA, "JU1440",
            "CX11271", NA, "CB4853", NA, "JU1586", NA, "ED3012", NA, "JU440", NA, "CX11276", NA)
 ```
 
-####Usage
+###Usage
 1. Edit the first line in the SetupAndScoreReportGenerator.R so that the "dataDirs" variable is a vector that contains all of the directories for the experiment
 	+ For example, you would enter the directories for GWAS1a and GWAS1b because, collectively, they make up the GWAS1 experiment
 2. Open R and source the SetupAndScoreReportGenerator.R file
