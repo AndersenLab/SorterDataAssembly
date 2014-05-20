@@ -11,25 +11,6 @@ readSorter <- function(file, tofmin=20, tofmax=2000, extmin=20, extmax=5000)  {
   return(data)
 }
 
-#Function to extract sorter files from the L4 sort setup
-procSetup <- function(file, tofmin=20, tofmax=2000, extmin=20, extmax=5000) {
-  
-  require(plyr)
-  
-  plate <- readSorter(file, tofmin, tofmax, extmin)
-  modplate <- with(plate, data.frame(row=Row, col=as.factor(Column), 
-                                     sort = Status.sort, TOF=TOF, EXT=EXT, 
-                                     time=Time.Stamp, green=Green, yellow=Yellow, 
-                                     red=Red))
-  
-  proc <- ddply(.data=modplate[modplate$row %in% c("A","B","C","D","E","F","G", "H"),], .var=c("row", "col"), .drop=F, .fun=function(x){
-    c(pop = length(x$EXT), sorted = sum(x$sort==6), TOF = mean(x$TOF), EXT = mean(x$EXT))
-  })
-  
-  
-  return(proc)
-  
-}
 
 #Function to make time per well go from 0 to X as opposed to running for the entire plate
 extractTime <- function(x) {x$time <- x$time - min(x$time); return(x) }
