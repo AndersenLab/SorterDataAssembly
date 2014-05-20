@@ -123,7 +123,7 @@ strains <- c("CX11285", NA, "ED3048", NA, "JU1200", NA, "CX11315", NA, "JU1440",
            "MY23", NA, "JU1246", NA, "JU1395", NA, "CB4854", NA, "JU1213", NA, "EG4724", NA,
            "EG4725", NA, "JU311", NA, "JU397", NA, "JU1581", NA, "JU1568", NA, "MY1", NA,
            "JU323", NA, "JU792", NA, "JU775", NA, "JU310", NA, "JU393", NA, "JU847", NA,
-           "CX11271", NA, "CB4853", NA, "JU1586", NA, "ED3012", NA, "JU440", NA, "CX11276", NA<-
+           "CX11271", NA, "CB4853", NA, "JU1586", NA, "ED3012", NA, "JU440", NA, "CX11276", NA)
 ```
 
 ####Usage
