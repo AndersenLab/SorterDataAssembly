@@ -681,11 +681,9 @@ for(dir in seq(1,length(dataDirs))){
     }
 }
 
-if(exists(output)){
+if(exists("output")){
     finalDF = ldply(output)
-} else {
-    finalDF = completeDF
-}
+} 
 
 
 #sumRSQ = ddply(rsq, .variables = "Variable", summarize, meanRSQ = mean(RSquared), sdRSQ = sd(RSquared), medianRSQ = median(RSquared), meanP = mean(pval), sdP = sd(pval), medianP = median(pval))
