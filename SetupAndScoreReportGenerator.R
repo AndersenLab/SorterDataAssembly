@@ -12,10 +12,10 @@ require(reshape)
 ###############Change for each experiment###################
 
 #Path to experiment folder minus root dir
-dataDirs = c("Dropbox/HTA/Results/20140422_N2timecourse")
+dataDirs = c("Dropbox/HTA/Results/20140317_GWAS1a", "Dropbox/HTA/Results/20140318_GWAS1b")
 
 #Set to false if you want to skip making the reports (saves a lot of time)
-makeReports = TRUE
+makeReports = FALSE
 
 ###############Change for each experiment###################
 
@@ -99,7 +99,7 @@ info = function(filePath){
 }
 
 #Function to process the setup data
-procSetup <- function(file, tofmin=20, tofmax=2000, extmin=20, extmax=5000) {
+procSetup <- function(file, tofmin=60, tofmax=2000, extmin=20, extmax=5000) {
     
     #Read in the sorter data from the file
     plate <- readSorter(file, tofmin, tofmax, extmin)
@@ -369,13 +369,6 @@ for(dir in seq(1,length(dataDirs))){
         
         setup.proc[is.na(setup.proc)]<--1
         setup.proc[-1:-4]<-round(setup.proc[,-1:-4],1) 
-        
-        
-        
-        pop1 <- subset(setup.proc, pop>=50)
-        pop2 <- subset(setup.proc, pop>=25&pop<50)
-        pop3 <- subset(setup.proc,pop>=15&pop<25)
-        pop4 <- subset(setup.proc,pop<15)
      
         split <- setup.plate[[i]]
         plate<-paste0("p",split)
@@ -390,6 +383,8 @@ for(dir in seq(1,length(dataDirs))){
             file.setup <- setup.filelist[[i]]
             saveRDS(file.setup,file=file.path(dir.existing,"temp","file-setup.rds"))
             
+            fileName = strsplit(file.setup, "\\.")[[1]][1]
+            
             date=Sys.Date()
             date=as.character(format(date,format="%Y%m%d"))
             saveRDS(date,file=file.path(dir.existing,"temp","date.rds"))
@@ -402,7 +397,25 @@ for(dir in seq(1,length(dataDirs))){
                 xlab("columns")+ylab("rows")+labs(title=paste0("Setup p",setup.plate[[i]]," # Sorted"))
             saveRDS(plot.setup.sorted,file=file.path(dir.existing,"temp","plot-setup-sorted.rds"))
             
-            plot.setup.pop <- ggplot(pop1)+geom_rect(aes(xmin=0,xmax=5,ymin=0,ymax=5), fill="red")+geom_rect(data=pop2,aes(xmin=0,xmax=5,ymin=0,ymax=5),fill="yellow")+geom_rect(data=pop3,aes(xmin=0,xmax=5,ymin=0,ymax=5),fill="green")+geom_rect(data=pop4,aes(xmin=0,xmax=5,ymin=0,ymax=5),fill="white")+facet_grid(row~col) +geom_text(aes(x=2.5,y=2.5,label=pop))+geom_text(data=pop2,aes(x=2.5,y=2.5,label=pop))+geom_text(data=pop3,aes(x=2.5,y=2.5,label=pop))+geom_text(data=pop4,aes(x=2.5,y=2.5,label=pop))+presentation+theme(axis.ticks.x=element_blank(), axis.ticks.y=element_blank(), axis.text.x=element_blank(), axis.text.y=element_blank())+xlab("columns")+ylab("rows")+labs(title=paste0("Setup p",setup.plate[[i]]," Population"))
+            for(row in 1:nrow(setup.proc)){
+                if(setup.proc$pop[row] < 15) {
+                    setup.proc$bin[row] = "low"
+                } else if(setup.proc$pop[row] < 25) {
+                    setup.proc$bin[row] = "low-mid"
+                } else if(setup.proc$pop[row] < 50) {
+                    setup.proc$bin[row] = "high-mid"
+                } else {
+                    setup.proc$bin[row] = "high"
+                }
+            }
+            
+            plot.setup.pop <- ggplot(setup.proc)+geom_rect(aes(xmin=0,xmax=5,ymin=0,ymax=5,fill=bin))+
+                scale_fill_manual(values = c("low" = "white", "low-mid" = "green", "high-mid" = "yellow", "high" = "red"))+
+                facet_grid(row~col)+geom_text(aes(x=2.5,y=2.5,label=pop))+
+                presentation+
+                theme(axis.ticks.x=element_blank(), axis.ticks.y=element_blank(), axis.text.x=element_blank(), axis.text.y=element_blank())+
+                xlab("columns")+ylab("rows")+labs(title=paste0("Setup p",setup.plate[[i]]," Population"))
+            
             saveRDS(plot.setup.pop,file=file.path(dir.existing,"temp","plot-setup-pop.rds"))
             
             plot.setup.tofext<-ggplot(setup.proc)+geom_rect(fill=NA,aes(xmin=0,xmax=5,ymin=0,ymax=5))+facet_grid(row~col)+geom_text(aes(x=1,y=4,label=TOF))+geom_text(aes(x=4,y=4,label=EXT))+geom_text(aes(x=1,y=1,label=TOFmed))+geom_text(aes(x=4,y=1,label=EXTmed))+presentation+theme(axis.ticks.x=element_blank(), axis.ticks.y=element_blank(), axis.text.x=element_blank(), axis.text.y=element_blank())+xlab("columns")+ylab("rows")+labs(title="Setup p",setup.plate[[i]]," TOF/EXT")
@@ -416,7 +429,7 @@ for(dir in seq(1,length(dataDirs))){
             fileNameString = paste0(date,'-',split,'.md')
             
             knit(file.report.setup, file.path(dir.existing,"temp",fileNameString)) 
-            markdownToHTML(fileNameString, file.path(dir.report,paste0(split,'_setup.html')))
+            markdownToHTML(fileNameString, file.path(dir.report,paste0(fileName,'_setup.html')))
         }
         unlink(file.path(dir.existing,"temp"), recursive = TRUE)
         print(paste0("Done with setup #", i))
@@ -498,6 +511,7 @@ for(dir in seq(1,length(dataDirs))){
         file.score<-score.filelist[[i]]
         saveRDS(file.score,file=file.path(dir.existing,"temp","file-score.rds"))
         
+        file.name = strsplit(file.score, "\\.")[[1]][1]
         
         saveRDS(strains,file=file.path(dir.existing,"temp","strains.rds"))
         
@@ -554,7 +568,7 @@ for(dir in seq(1,length(dataDirs))){
             fileNameString = paste0(date,'-',split,'-score.md')
             
             knit(file.report.score, file.path(dir.existing,"temp",fileNameString))
-            markdownToHTML(fileNameString, file.path(dir.report,paste0(split,"_score.html")))
+            markdownToHTML(fileNameString, file.path(dir.report,paste0(file.name,"_score.html")))
         }
         unlink(file.path(dir.existing,"temp"), recursive = TRUE)
         print(paste0("Done with score #", i))
@@ -585,7 +599,7 @@ for(dir in seq(1,length(dataDirs))){
 }
 
 completeDF = ldply(completeDFs)
-completeDF = completeDF[,2:ncol(completeDF)]
+completeDF = completeDF[,3:ncol(completeDF)]
 if(length(levels(completeDF$assay)) > 1){
     startCol = ncol(completeDF) + 1
     for (i in seq(10,ncol(completeDF))){
@@ -619,7 +633,7 @@ for(dir in seq(1,length(dataDirs))){
     
     finalPlates = list()
     length(finalPlates) = length(data)
-    if (length(controlPlates != 0)){
+    if (length(controlPlates) != 0){
         for(i in 1:length(controlPlates)){
             controls = controlPlates[[i]]
             means = list()
@@ -681,9 +695,17 @@ for(dir in seq(1,length(dataDirs))){
     }
 }
 
-if(exists("output")){
+if(length(output) != 0){
     finalDF = ldply(output)
-} 
+} else {
+    finalDF = completeDF
+}
+
+write.csv(finalDF, file.path(dir.existing, "GWAS1_complete.csv"), row.names=FALSE)
 
 
 #sumRSQ = ddply(rsq, .variables = "Variable", summarize, meanRSQ = mean(RSquared), sdRSQ = sd(RSquared), medianRSQ = median(RSquared), meanP = mean(pval), sdP = sd(pval), medianP = median(pval))
+
+#llply(score.modplate, function(x){range(x$TOF)})
+
+#llply(score.modplate, function(x){plot(x$TOF, x$EXT, xlim = c(0,100), ylim = c(0,500))})
