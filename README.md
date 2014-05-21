@@ -8,9 +8,9 @@ This program is run on a directory containing either the raw setup or raw score 
 ###Naming Conventions
 Naming conventions are critical to the correct execution of this code. The convention is outlined below:
 
-+ All plates should be named in the following manner: **plateNumber_condition_notes.txt**
++ All plates should be named in the following manner: **plateNumber_condition-notes.txt**
 	+ Plate number should always be the letter "p" followed immediately by the two digit representation of the number (i.e. "08" or "15")
-	+ Be careful of spelling errors in the condition name, though this is not critical as the program will prompt you before stitching together plates with matching numbers but different condition names
+	+ Be careful of spelling errors in the condition name, though this is not critical as the program will prompt you before stitching together plates with matching numbers and different condition names. Unfixed Spelling errors will cause issues later on in the processing and mapping code.
 	+ Anything in the notes section of the name will be ignored by the program
 	+ The file ***must*** be saved as .txt
 	+ Plate number and condition name ***must*** be separated by an underscore
@@ -23,7 +23,7 @@ Naming conventions are critical to the correct execution of this code. The conve
 1. Edit the script at the bottom of the file so that "dirList" contains all parent directories for all setup and score data from one entire experiment
 2. In terminal, cd into directory containing the PlateStitcher.py script
 3. Execute $python PlateStitcher.py
-4. Program will run, printing any file modifications, movements, etc. User may be prompted for input if necessary (i.e. two or more plate numbers match, but condition names do not).
+4. Program will run, printing any file modifications, movements, etc. User may be prompted for input if necessary (i.e. two or more plate numbers match, condition names do not).
 
 
 SetupAndScoreReportGenerator.R
