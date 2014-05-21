@@ -1,6 +1,6 @@
 
 #Function to read in txt file from sorter
-readSorter <- function(file, tofmin=20, tofmax=2000, extmin=20, extmax=5000)  {
+readSorter <- function(file, tofmin=60, tofmax=2000, extmin=20, extmax=5000)  {
   data<-read.delim(file=file, header=T, na.strings=c("n/a"), as.is=T, stringsAsFactors=F)
   data<-data[!is.na(data$TOF),]
   data<-data[,!is.na(data[1,])]
@@ -16,7 +16,7 @@ readSorter <- function(file, tofmin=20, tofmax=2000, extmin=20, extmax=5000)  {
 extractTime <- function(x) {x$time <- x$time - min(x$time); return(x) }
 
 #Function to take sorter raw dataframe and process to determine worm or bubble using SVM
-sortertoDF <- function(file, tofmin=20, tofmax=2000, extmin=20, extmax=5000) {
+sortertoDF <- function(file, tofmin=60, tofmax=2000, extmin=20, extmax=5000) {
   require(plyr)
   require(kernlab)
   plate <- readSorter(file, tofmin, tofmax, extmin, extmax)
@@ -35,7 +35,7 @@ sortertoDF <- function(file, tofmin=20, tofmax=2000, extmin=20, extmax=5000) {
 }
 
 #We might need a function to enter data without an SVM
-sortertoDFnoSVM <- function(file, tofmin=20, tofmax=2000, extmin=20, extmax=5000) {
+sortertoDFnoSVM <- function(file, tofmin=60, tofmax=2000, extmin=20, extmax=5000) {
   require(plyr)
   #require(kernlab)
   plate <- readSorter(file, tofmin, tofmax, extmin, extmax)
