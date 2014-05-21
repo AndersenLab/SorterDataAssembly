@@ -5,9 +5,10 @@ dir = file.path(dir.existing, "temp")
 date=readRDS(file.path(dir,"date.rds"))
 plate=readRDS(file.path(dir,"split.rds"))
 file.setup=readRDS(file.path(dir,"file-setup.rds"))
+condition = strsplit(strsplit(file.setup,"_")[[1]][2],"\\.")[[1]][1]
 ```
 
-SETUP Report: `r date` - `r plate`
+SETUP Report: `r date` - Plate `r plate` `r condition`
 ========================================================
 File name: `r file.setup`
 
@@ -19,11 +20,6 @@ strains=readRDS(file.path(dir,"strains.rds"))
 strains
 ```
 
-Contaminated wells:
-```{r echo=FALSE, warning=FALSE}
-contam=readRDS(file.path(dir,"contam.rds"))
-contam
-```
 
 
 Number of L4s sorted:
