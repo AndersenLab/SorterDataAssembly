@@ -12,10 +12,11 @@ require(reshape)
 ###############Change for each experiment###################
 
 #Path to experiment folder minus root dir
-dataDirs = c("Dropbox/HTA/Results/20140317_GWAS1a", "Dropbox/HTA/Results/20140318_GWAS1b")
+dataDirs = c("Dropbox/HTA/Results/20140331_GWAS3a", "Dropbox/HTA/Results/20140401_GWAS3b")
 
 #Set to false if you want to skip making the reports (saves a lot of time)
-makeReports = FALSE
+makeReports = TRUE
+
 
 ###############Change for each experiment###################
 
@@ -467,11 +468,40 @@ for(dir in seq(1,length(dataDirs))){
         score.pheno[[i]]<-score
     }
     
+    #############################################
+    #############################################
+    #############################################
+    #############################################
+    #############################################
+    #############################################
+    #############################################
+    # MAKE SURE CONTAMINATED WELLS ARE CORRECT ##
+    #############################################
+    #############################################
+    #############################################
+    #############################################
+    #############################################
+    #############################################
+    #############################################
+    #############################################
+    
+    source(file.path(dir.root,dir.data,file.contam))
+    
     bad<-score.plate
+    
+    contamWells = list()
+    
     for(i in 1:length(bad))
     {
         bad[[i]]<-paste0("p",bad[[i]])
-        bad[[i]]<-get(bad[[i]])
+        plateNumber = bad[[i]]
+        bad[[i]] = tryCatch({
+                get(bad[[i]])
+            }, error = function(err){
+                return("")
+            })
+        contamWells[[i]] = append(contamWells, bad[[i]])
+        try(rm(list = plateNumber))
         badWellsDF = setup.df[[i]][setup.df[[i]]$sorted == 0,c(1,2)]
         for(row in seq(1, nrow(badWellsDF))){
             badWell = paste0(badWellsDF[row,1], badWellsDF[row,2])
@@ -537,7 +567,7 @@ for(dir in seq(1,length(dataDirs))){
         saveRDS(split,file=file.path(dir.existing,"temp","split.rds"))
         
         plate<-paste0("p",split)
-        contam<-get(plate)
+        contam<-contamWells[[i]]
         saveRDS(contam,file=file.path(dir.existing,"temp","contam.rds"))
         
         proc[is.na(proc)]<--1
@@ -600,6 +630,10 @@ for(dir in seq(1,length(dataDirs))){
 
 completeDF = ldply(completeDFs)
 completeDF = completeDF[,3:ncol(completeDF)]
+
+# Remove infinite values from taking log of columns with 0 as value
+completeDF = data.frame(lapply(completeDF, function(x) replace(x, is.infinite(x),NA)))
+
 if(length(levels(completeDF$assay)) > 1){
     startCol = ncol(completeDF) + 1
     for (i in seq(10,ncol(completeDF))){
@@ -613,7 +647,7 @@ if(length(levels(completeDF$assay)) > 1){
     startCol = 10 
 }
 
-
+completeDF[,90]
 
 assays = dlply(completeDF, .variables = "assay")
 for(i in seq(1, length(assays))){
@@ -657,38 +691,62 @@ for(dir in seq(1,length(dataDirs))){
         rsq = data.frame()
         
         for(i in 1:length(testPlates)){
+            print(paste0("i = ",i))
             plates = testPlates[[i]]
             controlPlate = controlDFs[[i]]
+            #controlPlate[is.na(controlPlate)] = NA
+            #controlPlate[is.infinite(controlPlate)] = NA
             for(j in 1:length(plates)){
+                print(paste0("j = ",j))
                 plate = data[[plates[j]]]
                 for(k in startCol:ncol(plate)){
-                    plate = cbind(plate, residuals(lm(plate[,k]~controlPlate[,k], na.action = na.exclude)),
-                                  residuals(lm(plate[,k]~plate$n, na.action = na.exclude)),
-                                  residuals(lm(plate[,k]~plate$n+controlPlate[,k], na.action = na.exclude)) #Do you want additive or interaction effects??
-                    )
-                    colnames(plate)[ncol(plate)-2] = paste0("resid.control.",colnames(plate)[k])
-                    colnames(plate)[ncol(plate)-1] = paste0("resid.n.",colnames(plate)[k])
-                    colnames(plate)[ncol(plate)] = paste0("resid.control_n.",colnames(plate)[k])
-                    fit1 = summary(lm(plate[,k]~controlPlate[,k], na.action = na.exclude))
-                    rsq = rbind(rsq, data.frame(Variable = paste0("resid.control.",colnames(plate)[k]), RSquared = summary(lm(plate[,k]~controlPlate[,k], na.action = na.exclude))$r.squared,
-                                                pval = fit1$coefficients[2,4]))
-                    fit2 = summary(lm(plate[,k]~plate$n, na.action = na.exclude))
-                    rsq = rbind(rsq, data.frame(Variable = paste0("resid.n.",colnames(plate)[k]), RSquared = summary(lm(plate[,k]~plate$n, na.action = na.exclude))$r.squared,
-                                                pval = fit2$coefficients[2,4]))
-                    fit3 = summary(lm(plate[,k]~plate$n+controlPlate[,k], na.action = na.exclude))
-                    rsq = rbind(rsq, data.frame(Variable = paste0("resid.control_n.",colnames(plate)[k]), RSquared = summary(lm(plate[,k]~plate$n+controlPlate[,k], na.action = na.exclude))$r.squared,
-                                                pval = fit3$coefficients[2,4]))
+                    print(paste0("k = ",k))
                     
+                    plate = tryCatch({
+                        plate = cbind(plate, residuals(lm(plate[,k]~controlPlate[,k], na.action = na.exclude)),
+                                      residuals(lm(plate[,k]~plate$n, na.action = na.exclude)),
+                                      residuals(lm(plate[,k]~plate$n+controlPlate[,k], na.action = na.exclude)) #Do you want additive or interaction effects??
+                        )
+                    }, warning = function(war){
+                        plate = cbind(plate, residuals(lm(plate[,k]~controlPlate[,k], na.action = na.exclude)),
+                                      residuals(lm(plate[,k]~plate$n, na.action = na.exclude)),
+                                      residuals(lm(plate[,k]~plate$n+controlPlate[,k], na.action = na.exclude)) #Do you want additive or interaction effects??
+                        )
+                        print(war)
+                        return(plate)
+                    }, error = function(err){
+                        plate = cbind(plate, NA, NA, NA)
+                        print("An error was handled, NAs inserted.")
+                        return (plate)
+                    }, finally = {
+                        colnames(plate)[ncol(plate)-2] = paste0("resid.control.",colnames(plate)[k])
+                        colnames(plate)[ncol(plate)-1] = paste0("resid.n.",colnames(plate)[k])
+                        colnames(plate)[ncol(plate)] = paste0("resid.control_n.",colnames(plate)[k])
+                    })
                 }
-                plate = cbind(plate, residuals(lm(plate$n~controlPlate$n, na.action = na.exclude)),
-                              residuals(lm(plate$n~controlPlate$norm.n, na.action = na.exclude)),
-                              residuals(lm(plate$norm.n~controlPlate$n, na.action = na.exclude)),
-                              residuals(lm(plate$norm.n~controlPlate$norm.n, na.action = na.exclude)))
-                colnames(plate)[ncol(plate)-3] = "resid.control.n.resid.assay.n"
-                colnames(plate)[ncol(plate)-2] = "resid.control.norm.n.resid.assay.n"
-                colnames(plate)[ncol(plate)-1] = "resid.control.n.resid.assay.norm.n"
-                colnames(plate)[ncol(plate)] = "resid.control.norm.n.resid.assay.norm.n"
-                finalPlates[[plates[j]]] = plate
+                plate = tryCatch({
+                    plate = cbind(plate, residuals(lm(plate$n~controlPlate$n, na.action = na.exclude)),
+                                  residuals(lm(plate$n~controlPlate$norm.n, na.action = na.exclude)),
+                                  residuals(lm(plate$norm.n~controlPlate$n, na.action = na.exclude)),
+                                  residuals(lm(plate$norm.n~controlPlate$norm.n, na.action = na.exclude)))
+                }, warning = function(war){
+                    plate = cbind(plate, residuals(lm(plate$n~controlPlate$n, na.action = na.exclude)),
+                                  residuals(lm(plate$n~controlPlate$norm.n, na.action = na.exclude)),
+                                  residuals(lm(plate$norm.n~controlPlate$n, na.action = na.exclude)),
+                                  residuals(lm(plate$norm.n~controlPlate$norm.n, na.action = na.exclude)))
+                    print(war)
+                    return(plate)
+                }, error = function(err){
+                    plate = cbind(plate, NA, NA, NA)
+                    print("An error was handled, NAs inserted.")
+                    return (plate)
+                }, finally = {
+                    colnames(plate)[ncol(plate)-3] = "resid.control.n.resid.assay.n"
+                    colnames(plate)[ncol(plate)-2] = "resid.control.norm.n.resid.assay.n"
+                    colnames(plate)[ncol(plate)-1] = "resid.control.n.resid.assay.norm.n"
+                    colnames(plate)[ncol(plate)] = "resid.control.norm.n.resid.assay.norm.n"
+                    finalPlates[[plates[j]]] = plate
+                })
             }
         }
         output = append(output, finalPlates)
@@ -701,11 +759,4 @@ if(length(output) != 0){
     finalDF = completeDF
 }
 
-write.csv(finalDF, file.path(dir.existing, "GWAS1_complete.csv"), row.names=FALSE)
-
-
-#sumRSQ = ddply(rsq, .variables = "Variable", summarize, meanRSQ = mean(RSquared), sdRSQ = sd(RSquared), medianRSQ = median(RSquared), meanP = mean(pval), sdP = sd(pval), medianP = median(pval))
-
-#llply(score.modplate, function(x){range(x$TOF)})
-
-#llply(score.modplate, function(x){plot(x$TOF, x$EXT, xlim = c(0,100), ylim = c(0,500))})
+write.csv(finalDF, file.path(dir.existing, "GWAS3_complete.csv"), row.names=FALSE)
