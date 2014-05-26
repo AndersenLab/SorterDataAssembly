@@ -9,6 +9,7 @@ import re
 import collections
 import csv
 import shutil
+import sys
 
 
 class colors:
@@ -211,62 +212,55 @@ def missingFiles(directoryList, header):
             newFile.close()
 
 
+def stitchAll(directoryList):
+    finalDirList = []
+    for directory in dirList:
+        if not exists(directory):
+            finalDirList.append(expanduser(directory) + "/setup")
+            finalDirList.append(expanduser(directory) + "/score")
+        else:
+            finalDirList.append(directory + "/setup")
+            finalDirList.append(directory + "/score")
+
+    header = ["Id", "Plate", "Row", "Column", "Clog", "Scan rate",
+              "Status sort", "Status sel", "TOF", "EXT", "Green", "Yellow",
+              "Red", "PH Ext", "PW Ext", "PC Ext", "PH Green", "PW Green",
+              "PCGreen", "PH Yellow", "PW Yellow", "PCYellow", "PH Red",
+              "PW Red", "PCRed", "Time Stamp"]
+
+    header = "\t".join(header)
+
+    missingFiles(finalDirList, header)
+
+    for directory in finalDirList:
+        incFolderName = directory + "/IncompleteData"
+        if not exists(incFolderName):
+            mkdir(incFolderName)
+
+        allRows = ["A", "B", "C", "D", "E", "F", "G", "H"]
+        allCols = range(1, 13)
+        allWells = Set()
+        for n in range(0, len(allRows)):
+            for p in range(0, len(allCols)):
+                allWells.add((allRows[n], str(allCols[p])))
+
+        print (colors.FINISH + "\nNow testing all directories for " +
+               "duplicate plates...\n" + colors.DEFAULT)
+
+        duplicates = getDuplicates(directory)
+
+        stitch(duplicates, directory, allWells, colors)
+
+        print (colors.FINISH +
+               "\nNow testing all files for missing wells...\n" +
+               colors.DEFAULT)
+
+        addWells(directory, allWells, colors)
+
+    print colors.FINISH + "\nComplete\n" + colors.DEFAULT
+
+
 # # # # # # # # # Script # # # # # # # # # # #
+dirList = sys.argv[1:]
 
-# Get the directory
-#dirList = ["~/Dropbox/HTA/Results/20140428_RIAILs1", "~/Dropbox/HTA/Results/20140429_RIAILs2", "~/Dropbox/HTA/Results/20140505_RIAILs3", "~/Dropbox/HTA/Results/20140506_RIAILs4", "~/Dropbox/HTA/Results/20140512_RIAILs5", "~/Dropbox/HTA/Results/20140513_RIAILs6"]
-
-
-
-############ EDIT HERE #######################
-
-
-dirList = ["~/Dropbox/HTA/Results/20140407_GWAS4a", "~/Dropbox/HTA/Results/20140408_GWAS4b"]
-
-
-##############################################
-
-finalDirList = []
-for directory in dirList:
-    if not exists(directory):
-        finalDirList.append(expanduser(directory) + "/setup")
-        finalDirList.append(expanduser(directory) + "/score")
-    else:
-        finalDirList.append(directory + "/setup")
-        finalDirList.append(directory + "/score")
-
-header = ["Id", "Plate", "Row", "Column", "Clog", "Scan rate", "Status sort",
-          "Status sel", "TOF", "EXT", "Green", "Yellow", "Red", "PH Ext",
-          "PW Ext", "PC Ext", "PH Green", "PW Green", "PCGreen", "PH Yellow",
-          "PW Yellow", "PCYellow", "PH Red", "PW Red", "PCRed", "Time Stamp"]
-
-header = "\t".join(header)
-
-missingFiles(finalDirList, header)
-
-
-for directory in finalDirList:
-    incFolderName = directory + "/IncompleteData"
-    if not exists(incFolderName):
-        mkdir(incFolderName)
-
-    allRows = ["A", "B", "C", "D", "E", "F", "G", "H"]
-    allCols = range(1, 13)
-    allWells = Set()
-    for n in range(0, len(allRows)):
-        for p in range(0, len(allCols)):
-            allWells.add((allRows[n], str(allCols[p])))
-
-    print (colors.FINISH + "\nNow testing all directories for " +
-           "duplicate plates...\n" + colors.DEFAULT)
-
-    duplicates = getDuplicates(directory)
-
-    stitch(duplicates, directory, allWells, colors)
-
-    print (colors.FINISH + "\nNow testing all files for missing wells...\n" +
-           colors.DEFAULT)
-
-    addWells(directory, allWells, colors)
-
-print colors.FINISH + "\nComplete\n" + colors.DEFAULT
+stitchAll(dirList)
