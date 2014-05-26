@@ -8,22 +8,11 @@ require(knitr)
 require(ggplot2)
 require(reshape)
 
+options(echo=TRUE)
 
-###############Change for each experiment###################
-
-#Path to experiment folder minus root dir
-#dataDirs <- c("Dropbox/HTA/Results/20140317_GWAS1a", "Dropbox/HTA/Results/20140318_GWAS1b")
-#dataDirs <- c("Dropbox/HTA/Results/20140324_GWAS2a", "Dropbox/HTA/Results/20140325_GWAS2b")
-#dataDirs <- c("Dropbox/HTA/Results/20140331_GWAS3a", "Dropbox/HTA/Results/20140401_GWAS3b")
-
-#Set to false if you want to skip making the reports (saves a lot of time)
-makeReports <- TRUE
-
-
-
-###############Change for each experiment###################
-
-
+args <- commandArgs(trailingOnly = TRUE)
+makeReports <- as.logical(args[1])
+dataDirs <- args[2:length(args)]
 
 #Set directories here:
 ##########################
@@ -289,6 +278,8 @@ for(dir in seq(1,length(dataDirs))){
     
     score.pheno[is.na(score.pheno)]<-0
     
+    t = meltdf(score.pheno[[1]])
+    
     melted.score.pheno<-llply(score.pheno,function(x){meltdf(x)})
     
     #Create complete data frame
@@ -507,4 +498,7 @@ for(dir in seq(1,length(dataDirs))){
     }
 }
 
-write.csv(output, file.path("~/Dropbox/HTA/Results/ProcessedData", "GWAS3_complete.csv"), row.names=FALSE)
+nameFrame = info(dir.data, 0)
+fileName = paste0(nameFrame$experiment[1], nameFrame$round[1], "_complete2.csv")
+
+write.csv(output, file.path("~/Dropbox/HTA/Results/ProcessedData", fileName), row.names=FALSE)
