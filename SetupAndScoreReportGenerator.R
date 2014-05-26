@@ -12,10 +12,13 @@ require(reshape)
 ###############Change for each experiment###################
 
 #Path to experiment folder minus root dir
-dataDirs = c("Dropbox/HTA/Results/20140331_GWAS3a", "Dropbox/HTA/Results/20140401_GWAS3b")
+dataDirs <- c("Dropbox/HTA/Results/20140317_GWAS1a", "Dropbox/HTA/Results/20140318_GWAS1b")
+#dataDirs <- c("Dropbox/HTA/Results/20140324_GWAS2a", "Dropbox/HTA/Results/20140325_GWAS2b")
+#dataDirs <- c("Dropbox/HTA/Results/20140331_GWAS3a", "Dropbox/HTA/Results/20140401_GWAS3b")
 
 #Set to false if you want to skip making the reports (saves a lot of time)
-makeReports = TRUE
+makeReports <- TRUE
+
 
 
 ###############Change for each experiment###################
@@ -28,35 +31,35 @@ makeReports = TRUE
 #Set directories here:
 ##########################
 #Root directory (usually the home directory, otherwise it should be 2 steps above the data files)
-dir.root = "~"
+dir.root <- "~"
 
 #Path to sorter processor functions minus root dir
-file.fxns = "SorterDataAssembly/ProcessSorterFxns_NU_TCS.R"
+file.fxns <- "SorterDataAssembly/ProcessSorterFxns_NU_TCS.R"
 
 #Path to presentation style data file minus root dir
-file.pres = "SorterDataAssembly/PresentationStyle.Rdata"
+file.pres <- "SorterDataAssembly/PresentationStyle.Rdata"
 
 #Path to contamination file minus root dir
-file.contam = "contamination.R"
+file.contam <- "contamination.R"
 
 #Path to strains file minus root dir
-file.strains = "strains.R"
+file.strains <- "strains.R"
 
 #Path to controls file minus root dir
-file.controls = "controls.R"
+file.controls <- "controls.R"
 
 #Path to setup dir minus root dir
-dir.setup = "setup"
+dir.setup <- "setup"
 
 #Path to score dir minus root dir
-dir.score = "score"
+dir.score <- "score"
 
 #Whole paths to the setup and score report markdown templates
-file.report.setup = "~/SorterDataAssembly/MasterSetupReport.Rmd"
-file.report.score = "~/SorterDataAssembly/MasterScoreReport.Rmd"
+file.report.setup <- "~/SorterDataAssembly/MasterSetupReport.Rmd"
+file.report.score <- "~/SorterDataAssembly/MasterScoreReport.Rmd"
 ##########################
 
-completeDFs = list()
+completeDFs <- list()
 
 #Extract the plate number
 plateno <- function(string)
@@ -70,31 +73,31 @@ plateno <- function(string)
     plate<-split[2]
 }
 
-experimentName = function(filePath){
-    splitfp = strsplit(filePath,"/")
-    dirName = splitfp[[1]][(length(splitfp[[1]]))]
-    details = strsplit(dirName,"_")[[1]][2]
+experimentName <- function(filePath){
+    splitfp <- strsplit(filePath,"/")
+    dirName <- splitfp[[1]][(length(splitfp[[1]]))]
+    details <- strsplit(dirName,"_")[[1]][2]
     return(details)
 }
 
 #Extract the metadata info
-info = function(filePath){
-    splitfp = strsplit(filePath,"/")
-    dirName = splitfp[[1]][(length(splitfp[[1]])-1)]
+info <- function(filePath){
+    splitfp <- strsplit(filePath,"/")
+    dirName <- splitfp[[1]][(length(splitfp[[1]])-1)]
     
-    date = strsplit(dirName,"_")[[1]][1]
+    date <- strsplit(dirName,"_")[[1]][1]
     
-    details = strsplit(dirName,"_")[[1]][2]
+    details <- strsplit(dirName,"_")[[1]][2]
     
-    experiment = strsplit(details,"[0-9]+")[[1]][1]
-    round = strsplit(details,"(?i)[a-z]+")[[1]][2]
-    assay = strsplit(details,"[0-9]+")[[1]][2]
+    experiment <- strsplit(details,"[0-9]+")[[1]][1]
+    round <- strsplit(details,"(?i)[a-z]+")[[1]][2]
+    assay <- strsplit(details,"[0-9]+")[[1]][2]
     
-    split = strsplit(splitfp[[1]][(length(splitfp[[1]]))],"_")[[1]]
-    drug = strsplit(split[2],"\\.")[[1]][1]
-    plate = strsplit(split[1],"p")[[1]][2]
+    split <- strsplit(splitfp[[1]][(length(splitfp[[1]]))],"_")[[1]]
+    drug <- strsplit(split[2],"\\.")[[1]][1]
+    plate <- strsplit(split[1],"p")[[1]][2]
     
-    frame = data.frame(date,experiment,round,assay,plate,drug)
+    frame <- data.frame(date,experiment,round,assay,plate,drug)
     
     return(frame)
 }
@@ -239,20 +242,20 @@ meltdf <- function(score){
     return(newscore)
 }
 
-possContam = function(procDataFrame){
-    strainMean = mean(procDataFrame$n[!is.na(procDataFrame$strain)], na.rm = TRUE)
-    strainSD = sd(procDataFrame$n[!is.na(procDataFrame$strain)], na.rm = TRUE)
-    washMean = mean(procDataFrame$n[is.na(procDataFrame$strain)], na.rm = TRUE)
-    washSD = sd(procDataFrame$n[is.na(procDataFrame$strain)], na.rm = TRUE)
-    possibleContam = c()
+possContam <- function(procDataFrame){
+    strainMean <- mean(procDataFrame$n[!is.na(procDataFrame$strain)], na.rm = TRUE)
+    strainSD <- sd(procDataFrame$n[!is.na(procDataFrame$strain)], na.rm = TRUE)
+    washMean <- mean(procDataFrame$n[is.na(procDataFrame$strain)], na.rm = TRUE)
+    washSD <- sd(procDataFrame$n[is.na(procDataFrame$strain)], na.rm = TRUE)
+    possibleContam <- c()
     for(j in seq(1,nrow(procDataFrame),)){
         if(!is.na(procDataFrame[j,"strain"] & !is.na(procDataFrame[j,"n"]))){
             if(procDataFrame[j,"n"] > strainMean + (2*strainSD)){
-                row = as.character(procDataFrame[j, "row"])
-                col = as.numeric(procDataFrame[j, "col"])
-                adjacentWash = procDataFrame[procDataFrame$row==row & procDataFrame$col==(col+1),"n"]
+                row <- as.character(procDataFrame[j, "row"])
+                col <- as.numeric(procDataFrame[j, "col"])
+                adjacentWash <- procDataFrame[procDataFrame$row==row & procDataFrame$col==(col+1),"n"]
                 if(adjacentWash > washMean + (2*washSD)){
-                    possibleContam = append(possibleContam, paste0(row, col))
+                    possibleContam <- append(possibleContam, paste0(row, col))
                 }
             }
         }
@@ -268,13 +271,13 @@ possContam = function(procDataFrame){
 
 
 for(dir in seq(1,length(dataDirs))){
-    dir.data = dataDirs[dir]
+    dir.data <- dataDirs[dir]
     
     
     #Next five lines establish the output directories for the reports, results, and temporary files
     ##If you change these, it will break the code as it is written, you will need to change some of the
     ##directories that are hard coded in later on
-    dir.existing = file.path(dir.root,dir.data)
+    dir.existing <- file.path(dir.root,dir.data)
     dir.new = "reports"
     dir.create(file.path(dir.existing,dir.new))
     dir.report<-file.path(dir.existing,dir.new)
@@ -316,7 +319,7 @@ for(dir in seq(1,length(dataDirs))){
     #For every file in the above list of files, process the setup file with procSetup
     setup.df<-llply(setup.filelist,function(x){procSetup(x)})
     
-    fileName = file.path(dir.root,dir.data,"results",paste0(experimentName(dir.data),"_rawSetupData.Rds"))
+    fileName <- file.path(dir.root,dir.data,"results",paste0(experimentName(dir.data),"_rawSetupData.Rds"))
     saveRDS(setup.df, fileName)
     
     
@@ -331,7 +334,7 @@ for(dir in seq(1,length(dataDirs))){
     #Create a list of scoring results with bubbles sccounted for with the SVM
     score.modplate<-llply(score.filelist,function(x){sortertoDF(x)})
     
-    fileName = file.path(dir.root,dir.data,"results",paste0(experimentName(dir.data),"_rawScoringData.Rds"))
+    fileName <- file.path(dir.root,dir.data,"results",paste0(experimentName(dir.data),"_rawScoringData.Rds"))
     saveRDS(score.modplate, fileName)
     
     setup.filelist<-as.list(setup.filelist)
@@ -384,7 +387,7 @@ for(dir in seq(1,length(dataDirs))){
             file.setup <- setup.filelist[[i]]
             saveRDS(file.setup,file=file.path(dir.existing,"temp","file-setup.rds"))
             
-            fileName = strsplit(file.setup, "\\.")[[1]][1]
+            fileName <- strsplit(file.setup, "\\.")[[1]][1]
             
             date=Sys.Date()
             date=as.character(format(date,format="%Y%m%d"))
@@ -427,7 +430,7 @@ for(dir in seq(1,length(dataDirs))){
             saveRDS(split,file=file.path(dir.existing,"temp","split.rds"))
             saveRDS(contam,file=file.path(dir.existing,"temp","contam.rds"))
             
-            fileNameString = paste0(date,'-',split,'.md')
+            fileNameString <- paste0(date,'-',split,'.md')
             
             knit(file.report.setup, file.path(dir.existing,"temp",fileNameString)) 
             markdownToHTML(fileNameString, file.path(dir.report,paste0(fileName,'_setup.html')))
@@ -439,17 +442,9 @@ for(dir in seq(1,length(dataDirs))){
     
     
     
-    
-    
-    
-    
-    
     #score.pheno = list of processed score datasets with phenotype information (TOF/EXT quantiles etc)
     #without t(strains), strain matrix won't match up with plate setup
     score.pheno<-llply(score.modplate,function(x){processPheno(x,t(strains))})
-    
-    
-    
     
     
     #adds to score.pheno datasets a column of n normalized by number sorted in setup
@@ -457,8 +452,8 @@ for(dir in seq(1,length(dataDirs))){
     {
         setup<-setup.df[[i]]
         score<-score.pheno[[i]]
-        n = score$n
-        sorted = setup$sorted
+        n <- score$n
+        sorted <- setup$sorted
         if (length(n) != length(sorted)){
             stop("The lengths of the setup and score data frames do not match.\nRun PlateStitcher.py on both the setup and score data and try again.")
         }
@@ -468,52 +463,37 @@ for(dir in seq(1,length(dataDirs))){
         score.pheno[[i]]<-score
     }
     
-    #############################################
-    #############################################
-    #############################################
-    #############################################
-    #############################################
-    #############################################
-    #############################################
-    # MAKE SURE CONTAMINATED WELLS ARE CORRECT ##
-    #############################################
-    #############################################
-    #############################################
-    #############################################
-    #############################################
-    #############################################
-    #############################################
-    #############################################
+
     
     source(file.path(dir.root,dir.data,file.contam))
     
     bad<-score.plate
     
-    contamWells = list()
+    contamWells <- list()
     
     for(i in 1:length(bad))
     {
         bad[[i]]<-paste0("p",bad[[i]])
         plateNumber = bad[[i]]
-        bad[[i]] = tryCatch({
-                get(bad[[i]])
-            }, error = function(err){
-                return("")
-            })
-        contamWells[[i]] = append(contamWells, bad[[i]])
+        if(exists(bad[[i]])){
+            bad[[i]] = get(bad[[i]])
+        } else {
+            bad[[i]] = ""
+        }
+        contamWells[[i]] = bad[[i]]
         try(rm(list = plateNumber))
-        badWellsDF = setup.df[[i]][setup.df[[i]]$sorted == 0,c(1,2)]
+        badWellsDF <- setup.df[[i]][setup.df[[i]]$sorted == 0,c(1,2)]
         for(row in seq(1, nrow(badWellsDF))){
-            badWell = paste0(badWellsDF[row,1], badWellsDF[row,2])
+            badWell <- paste0(badWellsDF[row,1], badWellsDF[row,2])
             bad[[i]] = append(bad[[i]], badWell)
         }
+        i = i+1
     }
     
     #score.proc is list of totally processed score files
     for (i in 1:length(score.pheno)) {
         score.pheno[[i]] <- removeWells(score.pheno[[i]], bad[[i]])
     }
-    
     
     date=Sys.Date()
     date=as.character(format(date,format="%Y%m%d"))
@@ -523,10 +503,8 @@ for(dir in seq(1,length(dataDirs))){
     
     melted.score.pheno<-llply(score.pheno,function(x){meltdf(x)})
     
-    
-    
     #Create complete data frame
-    score.info = llply(file.path(dir.data,score.filelist), function(x){info(x)})
+    score.info <- llply(file.path(dir.data,score.filelist), function(x){info(x)})
     for(i in 1:length(score.pheno)){
         score.pheno[[i]] = as.data.frame(cbind(score.info[[i]],score.pheno[[i]]))
     }
@@ -541,7 +519,7 @@ for(dir in seq(1,length(dataDirs))){
         file.score<-score.filelist[[i]]
         saveRDS(file.score,file=file.path(dir.existing,"temp","file-score.rds"))
         
-        file.name = strsplit(file.score, "\\.")[[1]][1]
+        file.name <- strsplit(file.score, "\\.")[[1]][1]
         
         saveRDS(strains,file=file.path(dir.existing,"temp","strains.rds"))
         
@@ -554,13 +532,13 @@ for(dir in seq(1,length(dataDirs))){
         proc<-score.pheno[[i]]
         saveRDS(proc,file=file.path(dir.existing,"temp","proc.rds"))
         
-        possibleContam = possContam(proc)
+        possibleContam <- possContam(proc)
         
         saveRDS(possibleContam,file=file.path(dir.existing,"temp","possibleContam.rds"))
         
         
-        fileName = paste0(i,".csv")
-        write.csv(proc,file = file.path(dir.existing,"results",fileName))
+        fileName <- paste0(i,".csv")
+        write.csv(proc,file <- file.path(dir.existing,"results",fileName))
         
         
         split<-score.plate[[i]]
@@ -595,7 +573,7 @@ for(dir in seq(1,length(dataDirs))){
             plot.score.dist<-ggplot(melted.proc,aes(as.factor(col),value,fill=variable))+geom_bar(aes(x=3),stat="identity",position="stack")+facet_grid(row~col)+presentation+theme(axis.ticks.x=element_blank(), axis.ticks.y=element_blank(), axis.text.x=element_blank(), axis.text.y=element_blank())+xlab("columns")+ylab("rows")+labs(title=paste0("Score p",score.plate[[i]]," Life-stage Distribution"))
             saveRDS(plot.score.dist,file=file.path(dir.existing,"temp","plot-score-dist.rds"))
             
-            fileNameString = paste0(date,'-',split,'-score.md')
+            fileNameString <- paste0(date,'-',split,'-score.md')
             
             knit(file.report.score, file.path(dir.existing,"temp",fileNameString))
             markdownToHTML(fileNameString, file.path(dir.report,paste0(file.name,"_score.html")))
@@ -606,20 +584,20 @@ for(dir in seq(1,length(dataDirs))){
     
     
     
-    filelist = dir(file.path(dir.existing,"results"), pattern = "[0-9]+.csv")
+    filelist <- dir(file.path(dir.existing,"results"), pattern = "[0-9]+.csv")
     
-    df = read.csv(file.path(dir.existing,"results",filelist[1]))
+    df <- read.csv(file.path(dir.existing,"results",filelist[1]))
     
     for(i in 2:length(filelist)){
-        df = rbind.fill(df, read.csv(file.path(dir.existing,"results",filelist[i])))
+        df <- rbind.fill(df, read.csv(file.path(dir.existing,"results",filelist[i])))
     }
     
-    splitfp = strsplit(dir.data,"/")
-    dirName = splitfp[[1]][(length(splitfp[[1]]))]
+    splitfp <- strsplit(dir.data,"/")
+    dirName <- splitfp[[1]][(length(splitfp[[1]]))]
     
-    details = strsplit(dirName,"_")[[1]][2]
+    details <- strsplit(dirName,"_")[[1]][2]
     
-    name = paste0(details, "_complete.csv")
+    name <- paste0(details, "_complete.csv")
     
     write.csv(df, file.path(dir.existing,"results",name), row.names = FALSE)
 
@@ -628,84 +606,74 @@ for(dir in seq(1,length(dataDirs))){
     file.remove(file.path(dir.existing,"results",filelist))
 }
 
-completeDF = ldply(completeDFs)
-completeDF = completeDF[,3:ncol(completeDF)]
+completeDF <- ldply(completeDFs)
+completeDF <- completeDF[,2:ncol(completeDF)]
 
 # Remove infinite values from taking log of columns with 0 as value
-completeDF = data.frame(lapply(completeDF, function(x) replace(x, is.infinite(x),NA)))
+completeDF <- data.frame(lapply(completeDF, function(x) replace(x, is.infinite(x),NA)))
 
 if(length(levels(completeDF$assay)) > 1){
-    startCol = ncol(completeDF) + 1
+    startCol <- ncol(completeDF) + 1
     for (i in seq(10,ncol(completeDF))){
-        colName = colnames(completeDF)[i]
-        vectorName = paste0("resid.assay.",colName)
+        colName <- colnames(completeDF)[i]
+        vectorName <- paste0("resid.assay.",colName)
         assign("vector", residuals(lm(completeDF[,i]~completeDF$assay, na.action = na.exclude)))
-        completeDF = cbind(completeDF, vector)
+        completeDF <- cbind(completeDF, vector)
         colnames(completeDF)[ncol(completeDF)] = vectorName
     }
 } else {
-    startCol = 10 
+    startCol <- 10 
 }
 
-completeDF[,90]
-
-assays = dlply(completeDF, .variables = "assay")
+assays <- dlply(completeDF, .variables = "assay")
 for(i in seq(1, length(assays))){
     assays[[i]] = dlply(assays[[i]], .variables = "plate")
 }
 
-output = list()
+
+output = data.frame()
 
 for(dir in seq(1,length(dataDirs))){
-    dir.data = dataDirs[dir]
-    data = assays[[dir]]
+    dir.data <- dataDirs[dir]
+    data <- assays[[dir]]
     
     #Creating dataframes of control population and growth (n, TOF/EXT 25/50/75/mean)
     source(file.path(dir.root, dir.data, file.controls))
     
-    controlDFs = list()
+    controlDFs <- list()
     
-    finalPlates = list()
-    length(finalPlates) = length(data)
+    finalPlates <- data.frame()
     if (length(controlPlates) != 0){
         for(i in 1:length(controlPlates)){
-            controls = controlPlates[[i]]
-            means = list()
+            controls <- controlPlates[[i]]
+            means <- list()
             length(means) = ncol(data[[controls[1]]])
             for(j in 1:length(controls)){
-                plate = data[[controls[j]]]
-                finalPlates[[controls[j]]] = plate
+                plate <- data[[controls[j]]]
+                output <- rbind.fill(output, as.data.frame(plate))
                 for(k in 10:ncol(plate)){
                     means[[k]] = cbind(means[[k]], plate[,k])
                 }
             }
-            controlDF = plate[,1:9]
+            controlDF <- plate[,1:9]
             for(j in 10:ncol(data[[controls[1]]])){
-                controlDF = as.data.frame(cbind(controlDF, rowMeans(means[[j]], na.rm = TRUE)))
+                controlDF <- as.data.frame(cbind(controlDF, rowMeans(means[[j]], na.rm = TRUE)))
             }
             colnames(controlDF) = colnames(data[[controls[1]]])
-            controlDF = as.data.frame(controlDF)
-            controlDFs = append(controlDFs, list(controlDF))
+            controlDF <- as.data.frame(controlDF)
+            controlDFs <- append(controlDFs, list(controlDF))
         }
         
-        rsq = data.frame()
-        
         for(i in 1:length(testPlates)){
-            print(paste0("i = ",i))
-            plates = testPlates[[i]]
-            controlPlate = controlDFs[[i]]
-            #controlPlate[is.na(controlPlate)] = NA
-            #controlPlate[is.infinite(controlPlate)] = NA
+            plates <- testPlates[[i]]
+            controlPlate <- controlDFs[[i]]
             for(j in 1:length(plates)){
-                print(paste0("j = ",j))
-                plate = data[[plates[j]]]
+                plate <- data[[plates[j]]]
                 for(k in startCol:ncol(plate)){
-                    print(paste0("k = ",k))
-                    
-                    plate = tryCatch({
-                        plate = cbind(plate, residuals(lm(plate[,k]~controlPlate[,k], na.action = na.exclude)),
-                                      residuals(lm(plate[,k]~plate$n, na.action = na.exclude)),
-                                      residuals(lm(plate[,k]~plate$n+controlPlate[,k], na.action = na.exclude)) #Do you want additive or interaction effects??
+                    plate <- tryCatch({
+                        cbind(plate, residuals(lm(plate[,k]~controlPlate[,k], na.action = na.exclude)),
+                              residuals(lm(plate[,k]~plate$n, na.action = na.exclude)),
+                              residuals(lm(plate[,k]~plate$n+controlPlate[,k], na.action = na.exclude)) #Do you want additive or interaction effects??
                         )
                     }, warning = function(war){
                         plate = cbind(plate, residuals(lm(plate[,k]~controlPlate[,k], na.action = na.exclude)),
@@ -715,16 +683,16 @@ for(dir in seq(1,length(dataDirs))){
                         print(war)
                         return(plate)
                     }, error = function(err){
-                        plate = cbind(plate, NA, NA, NA)
+                        plate <- cbind(plate, NA, NA, NA)
                         print("An error was handled, NAs inserted.")
                         return (plate)
-                    }, finally = {
-                        colnames(plate)[ncol(plate)-2] = paste0("resid.control.",colnames(plate)[k])
-                        colnames(plate)[ncol(plate)-1] = paste0("resid.n.",colnames(plate)[k])
-                        colnames(plate)[ncol(plate)] = paste0("resid.control_n.",colnames(plate)[k])
                     })
+                    
+                    colnames(plate)[ncol(plate)-2] = paste0("resid.control.",colnames(plate)[k])
+                    colnames(plate)[ncol(plate)-1] = paste0("resid.n.",colnames(plate)[k])
+                    colnames(plate)[ncol(plate)] = paste0("resid.control_n.",colnames(plate)[k])
                 }
-                plate = tryCatch({
+                plate <- tryCatch({
                     plate = cbind(plate, residuals(lm(plate$n~controlPlate$n, na.action = na.exclude)),
                                   residuals(lm(plate$n~controlPlate$norm.n, na.action = na.exclude)),
                                   residuals(lm(plate$norm.n~controlPlate$n, na.action = na.exclude)),
@@ -740,23 +708,15 @@ for(dir in seq(1,length(dataDirs))){
                     plate = cbind(plate, NA, NA, NA)
                     print("An error was handled, NAs inserted.")
                     return (plate)
-                }, finally = {
-                    colnames(plate)[ncol(plate)-3] = "resid.control.n.resid.assay.n"
-                    colnames(plate)[ncol(plate)-2] = "resid.control.norm.n.resid.assay.n"
-                    colnames(plate)[ncol(plate)-1] = "resid.control.n.resid.assay.norm.n"
-                    colnames(plate)[ncol(plate)] = "resid.control.norm.n.resid.assay.norm.n"
-                    finalPlates[[plates[j]]] = plate
                 })
+                colnames(plate)[ncol(plate)-3] = "resid.control.n.resid.assay.n"
+                colnames(plate)[ncol(plate)-2] = "resid.control.norm.n.resid.assay.n"
+                colnames(plate)[ncol(plate)-1] = "resid.control.n.resid.assay.norm.n"
+                colnames(plate)[ncol(plate)] = "resid.control.norm.n.resid.assay.norm.n"
+                output = rbind.fill(output, as.data.frame(plate))
             }
         }
-        output = append(output, finalPlates)
     }
 }
 
-if(length(output) != 0){
-    finalDF = ldply(output)
-} else {
-    finalDF = completeDF
-}
-
-write.csv(finalDF, file.path(dir.existing, "GWAS3_complete.csv"), row.names=FALSE)
+write.csv(output, file.path("~/Dropbox/HTA/Results/ProcessedData", "GWAS1_complete.csv"), row.names=FALSE)
