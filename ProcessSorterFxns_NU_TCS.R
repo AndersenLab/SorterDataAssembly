@@ -18,9 +18,9 @@ experimentName <- function(filePath){
 }
 
 #Extract the metadata info
-info <- function(filePath){
+info <- function(filePath, levels = 1){
     splitfp <- strsplit(filePath,"/")
-    dirName <- splitfp[[1]][(length(splitfp[[1]])-1)]
+    dirName <- splitfp[[1]][(length(splitfp[[1]])-levels)]
     
     date <- strsplit(dirName,"_")[[1]][1]
     
@@ -173,7 +173,7 @@ processPheno <- function(modplate, strains) {
 }
 
 meltdf <- function(score){
-    newscore<-data.frame(row=rep(score$row,each=1),col=rep(score$col,each=1),n=rep(score$n,each=1),f.L1=rep(score$f.L1,each=1),f.L2=rep(score$f.L2,each=1),f.L3=rep(score$f.L3,each=1),f.L4=rep(score$f.L4,each=1),f.ad=rep(score$f.ad,each=1))
+    newscore<-data.frame(row=rep(score$row,each=1),col=rep(score$col,each=1),n=rep(score$n,each=1),f.L1=rep(score$f.L1,each=1),f.L2L3=rep(score$f.L2L3,each=1),f.L4=rep(score$f.L4,each=1),f.ad=rep(score$f.ad,each=1))
     newscore<-melt(newscore,id.var=c("row","col","n"))
     return(newscore)
 }
