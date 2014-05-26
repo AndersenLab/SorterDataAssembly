@@ -12,7 +12,7 @@ require(reshape)
 ###############Change for each experiment###################
 
 #Path to experiment folder minus root dir
-dataDirs <- c("Dropbox/HTA/Results/20140317_GWAS1a", "Dropbox/HTA/Results/20140318_GWAS1b")
+#dataDirs <- c("Dropbox/HTA/Results/20140317_GWAS1a", "Dropbox/HTA/Results/20140318_GWAS1b")
 #dataDirs <- c("Dropbox/HTA/Results/20140324_GWAS2a", "Dropbox/HTA/Results/20140325_GWAS2b")
 #dataDirs <- c("Dropbox/HTA/Results/20140331_GWAS3a", "Dropbox/HTA/Results/20140401_GWAS3b")
 
@@ -22,9 +22,6 @@ makeReports <- TRUE
 
 
 ###############Change for each experiment###################
-
-
-
 
 
 
@@ -60,215 +57,6 @@ file.report.score <- "~/SorterDataAssembly/MasterScoreReport.Rmd"
 ##########################
 
 completeDFs <- list()
-
-#Extract the plate number
-plateno <- function(string)
-{
-    split<-strsplit(string,"_")
-    split<-split[[1]]
-    split<-split[1]
-    
-    split<-strsplit(split,"p")
-    split<-split[[1]]
-    plate<-split[2]
-}
-
-experimentName <- function(filePath){
-    splitfp <- strsplit(filePath,"/")
-    dirName <- splitfp[[1]][(length(splitfp[[1]]))]
-    details <- strsplit(dirName,"_")[[1]][2]
-    return(details)
-}
-
-#Extract the metadata info
-info <- function(filePath){
-    splitfp <- strsplit(filePath,"/")
-    dirName <- splitfp[[1]][(length(splitfp[[1]])-1)]
-    
-    date <- strsplit(dirName,"_")[[1]][1]
-    
-    details <- strsplit(dirName,"_")[[1]][2]
-    
-    experiment <- strsplit(details,"[0-9]+")[[1]][1]
-    round <- strsplit(details,"(?i)[a-z]+")[[1]][2]
-    assay <- strsplit(details,"[0-9]+")[[1]][2]
-    
-    split <- strsplit(splitfp[[1]][(length(splitfp[[1]]))],"_")[[1]]
-    drug <- strsplit(split[2],"\\.")[[1]][1]
-    plate <- strsplit(split[1],"p")[[1]][2]
-    
-    frame <- data.frame(date,experiment,round,assay,plate,drug)
-    
-    return(frame)
-}
-
-#Function to process the setup data
-procSetup <- function(file, tofmin=60, tofmax=2000, extmin=20, extmax=5000) {
-    
-    #Read in the sorter data from the file
-    plate <- readSorter(file, tofmin, tofmax, extmin)
-    modplate <- with(plate, data.frame(row=Row, col=as.factor(Column),
-                                       sort = Status.sort, TOF=TOF, EXT=EXT,
-                                       time=Time.Stamp, green=Green, yellow=Yellow,
-                                       red=Red))
-    
-    #Process the data
-    proc <- ddply(.data=modplate[modplate$row %in% c("A","B","C","D","E","F","G", "H"),], .var=c("row", "col"), .drop=F, .fun=function(x){
-        c(pop = length(x$EXT), sorted = sum(x$sort==6), TOF = mean(x$TOF), EXT = mean(x$EXT),TOFmed=median(x$TOF),EXTmed=median(x$EXT)
-        )})
-    
-    return(proc)
-}
-
-#Convert the sorter data to a data frame
-sortertoDF <- function(file, tofmin=60, tofmax=2000, extmin=20, extmax=5000) {
-    plate <- readSorter(file, tofmin, tofmax, extmin, extmax)
-    modplate <- with(plate, data.frame(row=Row, col=as.factor(Column), TOF=TOF, EXT=EXT, time=Time.Stamp, green=Green, yellow=Yellow, red=Red))
-    modplate <- ddply(.data=modplate, .variables=c("row", "col"), .fun=extractTime)
-    load(file.path(dir.root,"Dropbox/Biosort/Scripts and functions/bubbleSVMmodel_noProfiler.RData"))
-    plateprediction <- predict(bubbleSVMmodel_noProfiler, modplate[,3:8], type="probabilities")
-    modplate$worm <- plateprediction[,"1"]
-    modplate$call50 <- factor(as.numeric(modplate$worm>0.5), levels=c(1,0), labels=c("worm", "bubble"))
-    modplate$norm.red <- modplate$red/modplate$TOF
-    modplate$stage <- ifelse(modplate$TOF<=100, "L1", 
-                             ifelse(modplate$TOF>=100 & modplate$TOF<=250, "L2", 
-                                    ifelse(modplate$TOF>=250 & modplate$TOF<=400, "L3",
-                                           ifelse(modplate$TOF>=400 & modplate$TOF<=700, "L4", "adult"))))
-    return(modplate)
-}
-
-#added quantiles of minEXT, q05_EXT through q95_EXT, maxEXT
-processPheno <- function(modplate, strains) {
-    processed <- ddply(.data=modplate[modplate$call50=="worm" | modplate$TOF == -1,], .variables=c("row", "col"),
-                       .fun=function(x){c(n=length(x$TOF),
-                                          meanTOF=mean(x$TOF),
-                                          medianTOF=median(x$TOF),
-                                          minTOF=as.numeric(quantile(x$TOF)[1]),
-                                          q05_TOF=as.numeric(quantile(x$TOF, probs=0.05)),
-                                          q10_TOF=as.numeric(quantile(x$TOF, probs=0.1)[1]),
-                                          q15_TOF=as.numeric(quantile(x$TOF, probs=0.15)[1]),
-                                          q20_TOF=as.numeric(quantile(x$TOF, probs=0.2)[1]),
-                                          q25_TOF=as.numeric(quantile(x$TOF, probs=0.25)[1]),
-                                          q30_TOF=as.numeric(quantile(x$TOF, probs=0.3)[1]),
-                                          q35_TOF=as.numeric(quantile(x$TOF, probs=0.35)[1]),
-                                          q40_TOF=as.numeric(quantile(x$TOF, probs=0.4)[1]),
-                                          q45_TOF=as.numeric(quantile(x$TOF, probs=0.45)[1]),
-                                          q55_TOF=as.numeric(quantile(x$TOF, probs=0.55)[1]),
-                                          q60_TOF=as.numeric(quantile(x$TOF, probs=0.6)[1]),
-                                          q65_TOF=as.numeric(quantile(x$TOF, probs=0.65)[1]),
-                                          q70_TOF=as.numeric(quantile(x$TOF, probs=0.70)[1]),
-                                          q75_TOF=as.numeric(quantile(x$TOF, probs=0.75)[1]),
-                                          q80_TOF=as.numeric(quantile(x$TOF, probs=0.8)[1]),
-                                          q85_TOF=as.numeric(quantile(x$TOF, probs=0.85)[1]),
-                                          q90_TOF=as.numeric(quantile(x$TOF, probs=0.90)[1]),
-                                          q95_TOF=as.numeric(quantile(x$TOF, probs=0.95)[1]),
-                                          maxTOF=as.numeric(quantile(x$TOF)[5]),
-                                          meanEXT=mean(x$EXT),
-                                          medianEXT=median(x$EXT),
-                                          
-                                          minEXT=as.numeric(quantile(x$EXT)[1]),
-                                          q05_EXT=as.numeric(quantile(x$EXT, probs=0.05)),
-                                          q10_EXT=as.numeric(quantile(x$EXT, probs=0.1)[1]),
-                                          q15_EXT=as.numeric(quantile(x$EXT, probs=0.15)[1]),
-                                          q20_EXT=as.numeric(quantile(x$EXT, probs=0.2)[1]),
-                                          q25_EXT=as.numeric(quantile(x$EXT, probs=0.25)[1]),
-                                          q30_EXT=as.numeric(quantile(x$EXT, probs=0.3)[1]),
-                                          q35_EXT=as.numeric(quantile(x$EXT, probs=0.35)[1]),
-                                          q40_EXT=as.numeric(quantile(x$EXT, probs=0.4)[1]),
-                                          q45_EXT=as.numeric(quantile(x$EXT, probs=0.45)[1]),
-                                          q55_EXT=as.numeric(quantile(x$EXT, probs=0.55)[1]),
-                                          q60_EXT=as.numeric(quantile(x$EXT, probs=0.6)[1]),
-                                          q65_EXT=as.numeric(quantile(x$EXT, probs=0.65)[1]),
-                                          q70_EXT=as.numeric(quantile(x$EXT, probs=0.70)[1]),
-                                          q75_EXT=as.numeric(quantile(x$EXT, probs=0.75)[1]),
-                                          q80_EXT=as.numeric(quantile(x$EXT, probs=0.8)[1]),
-                                          q85_EXT=as.numeric(quantile(x$EXT, probs=0.85)[1]),
-                                          q90_EXT=as.numeric(quantile(x$EXT, probs=0.90)[1]),
-                                          q95_EXT=as.numeric(quantile(x$EXT, probs=0.95)[1]),
-                                          maxEXT=as.numeric(quantile(x$EXT)[5]),
-                                          mean.red = mean(x$red, na.rm=T),
-                                          median.red = median(x$red, na.rm=T),
-                                          mean.gr = mean(x$green, na.rm=T),
-                                          median.gr = median(x$green, na.rm=T),
-                                          mean.y = mean(x$yellow, na.rm=T),
-                                          median.y = median(x$yellow, na.rm=T),
-                                          mean.normred = mean(x$norm.red, na.rm=T),
-                                          median.normred = mean(x$norm.red, na.rm=T),
-                                          f.L1 = length(which(x$stage == "L1"))/length(x$stage),
-                                          f.L2 = length(which(x$stage == "L2"))/length(x$stage),
-                                          f.L3 = length(which(x$stage == "L3"))/length(x$stage),
-                                          f.L4 = length(which(x$stage == "L4"))/length(x$stage),
-                                          f.ad = length(which(x$stage == "adult"))/length(x$stage),
-
-                                          log.meanEXT=log(mean(x$EXT)),
-                                          log.medianEXT=log(median(x$EXT)),
-                                          log.minEXT=as.numeric(log(quantile(x$EXT)[1])),
-                                          log.q05_EXT=as.numeric(log(quantile(x$EXT, probs=0.05))),
-                                          log.q10_EXT=as.numeric(log(quantile(x$EXT, probs=0.1)[1])),
-                                          log.q15_EXT=as.numeric(log(quantile(x$EXT, probs=0.15)[1])),
-                                          log.q20_EXT=as.numeric(log(quantile(x$EXT, probs=0.2)[1])),
-                                          log.q25_EXT=as.numeric(log(quantile(x$EXT, probs=0.25)[1])),
-                                          log.q30_EXT=as.numeric(log(quantile(x$EXT, probs=0.3)[1])),
-                                          log.q35_EXT=as.numeric(log(quantile(x$EXT, probs=0.35)[1])),
-                                          log.q40_EXT=as.numeric(log(quantile(x$EXT, probs=0.4)[1])),
-                                          log.q45_EXT=as.numeric(log(quantile(x$EXT, probs=0.45)[1])),
-                                          log.q55_EXT=as.numeric(log(quantile(x$EXT, probs=0.55)[1])),
-                                          log.q60_EXT=as.numeric(log(quantile(x$EXT, probs=0.6)[1])),
-                                          log.q65_EXT=as.numeric(log(quantile(x$EXT, probs=0.65)[1])),
-                                          log.q70_EXT=as.numeric(log(quantile(x$EXT, probs=0.70)[1])),
-                                          log.q75_EXT=as.numeric(log(quantile(x$EXT, probs=0.75)[1])),
-                                          log.q80_EXT=as.numeric(log(quantile(x$EXT, probs=0.8)[1])),
-                                          log.q85_EXT=as.numeric(log(quantile(x$EXT, probs=0.85)[1])),
-                                          log.q90_EXT=as.numeric(log(quantile(x$EXT, probs=0.90)[1])),
-                                          log.q95_EXT=as.numeric(log(quantile(x$EXT, probs=0.95)[1])),
-                                          log.maxEXT=as.numeric(log(quantile(x$EXT)[5])),
-                                          log.mean.red = log(mean(x$red, na.rm=T)),
-                                          log.median.red = log(median(x$red, na.rm=T)),
-                                          log.mean.normred = log(mean(x$norm.red, na.rm=T)),
-                                          log.median.normred = log(mean(x$norm.red, na.rm=T))
-                       )}, .drop=F)
-    
-    analysis <- data.frame(strain = as.character(strains), processed)
-    analysis <- analysis[order(analysis$strain),]
-    analysis <- analysis[order(analysis$row, analysis$col),]
-    analysis[as.numeric(analysis$meanTOF)==-1 | is.na(analysis$meanTOF),4:ncol(analysis)] = NA
-    #analysis <- droplevels(na.omit(analysis))
-    return(analysis)
-}
-
-meltdf <- function(score){
-    newscore<-data.frame(row=rep(score$row,each=1),col=rep(score$col,each=1),n=rep(score$n,each=1),f.L1=rep(score$f.L1,each=1),f.L2=rep(score$f.L2,each=1),f.L3=rep(score$f.L3,each=1),f.L4=rep(score$f.L4,each=1),f.ad=rep(score$f.ad,each=1))
-    newscore<-melt(newscore,id.var=c("row","col","n"))
-    return(newscore)
-}
-
-possContam <- function(procDataFrame){
-    strainMean <- mean(procDataFrame$n[!is.na(procDataFrame$strain)], na.rm = TRUE)
-    strainSD <- sd(procDataFrame$n[!is.na(procDataFrame$strain)], na.rm = TRUE)
-    washMean <- mean(procDataFrame$n[is.na(procDataFrame$strain)], na.rm = TRUE)
-    washSD <- sd(procDataFrame$n[is.na(procDataFrame$strain)], na.rm = TRUE)
-    possibleContam <- c()
-    for(j in seq(1,nrow(procDataFrame),)){
-        if(!is.na(procDataFrame[j,"strain"] & !is.na(procDataFrame[j,"n"]))){
-            if(procDataFrame[j,"n"] > strainMean + (2*strainSD)){
-                row <- as.character(procDataFrame[j, "row"])
-                col <- as.numeric(procDataFrame[j, "col"])
-                adjacentWash <- procDataFrame[procDataFrame$row==row & procDataFrame$col==(col+1),"n"]
-                if(adjacentWash > washMean + (2*washSD)){
-                    possibleContam <- append(possibleContam, paste0(row, col))
-                }
-            }
-        }
-    } 
-}
-
-
-
-
-
-
-
-
 
 for(dir in seq(1,length(dataDirs))){
     dir.data <- dataDirs[dir]
@@ -719,4 +507,4 @@ for(dir in seq(1,length(dataDirs))){
     }
 }
 
-write.csv(output, file.path("~/Dropbox/HTA/Results/ProcessedData", "GWAS1_complete.csv"), row.names=FALSE)
+write.csv(output, file.path("~/Dropbox/HTA/Results/ProcessedData", "GWAS3_complete.csv"), row.names=FALSE)
