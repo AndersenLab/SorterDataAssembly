@@ -20,14 +20,14 @@ class colors:
     DEFAULT = "\x1b[39m"
 
 
-def nameFile(f):
+def nameFile(f, directory):
     # Function to make the stitched plate file name
     number = f.split("_")[0]
     drug = f.split("_")[1].split(".")[0]
     return directory + "/" + number + "_" + drug + "_stitched.txt"
 
 
-def nameFile2(f):
+def nameFile2(f, directory):
     # Function to make the completed plate file name
     number = f.split("_")[0]
     drug = f.split("_")[1].split(".")[0]
@@ -88,7 +88,7 @@ def stitch(duplicates, directory, allWells, colors):
                         with open(fileName, "r") as f:
                             reader = csv.reader(f, delimiter="\t")
                             if fileCount == 1:
-                                name = nameFile(txtFiles[j])
+                                name = nameFile(txtFiles[j], directory)
                                 header = reader.next()
                                 allData.append(header)
                             for row in reader:
@@ -169,7 +169,7 @@ def addWells(directory, allWells, colors):
                         newRow.append("-1")
                     allData.append(newRow)
 
-                name = nameFile2(txtFiles[i])
+                name = nameFile2(txtFiles[i], directory)
 
                 newFile = open(name, "w+")
 
@@ -212,7 +212,7 @@ def missingFiles(directoryList, header):
             newFile.close()
 
 
-def stitchAll(directoryList):
+def stitchAll(dirList):
     finalDirList = []
     for directory in dirList:
         if not exists(directory):
@@ -258,9 +258,4 @@ def stitchAll(directoryList):
         addWells(directory, allWells, colors)
 
     print colors.FINISH + "\nComplete\n" + colors.DEFAULT
-
-
-# # # # # # # # # Script # # # # # # # # # # #
-dirList = sys.argv[1:]
-
-stitchAll(dirList)
+    
