@@ -67,10 +67,10 @@ sortertoDF <- function(file, tofmin=60, tofmax=2000, extmin=20, extmax=5000) {
     modplate$worm <- plateprediction[,"1"]
     modplate$call50 <- factor(as.numeric(modplate$worm>0.5), levels=c(1,0), labels=c("worm", "bubble"))
     modplate$norm.red <- modplate$red/modplate$TOF
-    modplate$stage <- ifelse(modplate$TOF<=100, "L1", 
-                             ifelse(modplate$TOF>=100 & modplate$TOF<=250, "L2", 
-                                    ifelse(modplate$TOF>=250 & modplate$TOF<=400, "L3",
-                                           ifelse(modplate$TOF>=400 & modplate$TOF<=700, "L4", "adult"))))
+    modplate$stage <- ifelse(modplate$TOF>=60 & modplate$TOF<90, "L1", 
+                             ifelse(modplate$TOF>=90 & modplate$TOF<200, "L2/L3",
+                                    ifelse(modplate$TOF>=200 & modplate$TOF<300, "L4",
+                                           ifelse(modplate$TOF>=300, "adult", NA))))
     return(modplate)
 }
 
@@ -80,49 +80,49 @@ processPheno <- function(modplate, strains) {
                        .fun=function(x){c(n=length(x$TOF),
                                           meanTOF=mean(x$TOF),
                                           medianTOF=median(x$TOF),
-                                          minTOF=as.numeric(quantile(x$TOF)[1]),
-                                          q05_TOF=as.numeric(quantile(x$TOF, probs=0.05)),
+#                                           minTOF=as.numeric(quantile(x$TOF)[1]),
+#                                           q05_TOF=as.numeric(quantile(x$TOF, probs=0.05)),
                                           q10_TOF=as.numeric(quantile(x$TOF, probs=0.1)[1]),
-                                          q15_TOF=as.numeric(quantile(x$TOF, probs=0.15)[1]),
-                                          q20_TOF=as.numeric(quantile(x$TOF, probs=0.2)[1]),
+#                                           q15_TOF=as.numeric(quantile(x$TOF, probs=0.15)[1]),
+#                                           q20_TOF=as.numeric(quantile(x$TOF, probs=0.2)[1]),
                                           q25_TOF=as.numeric(quantile(x$TOF, probs=0.25)[1]),
-                                          q30_TOF=as.numeric(quantile(x$TOF, probs=0.3)[1]),
-                                          q35_TOF=as.numeric(quantile(x$TOF, probs=0.35)[1]),
-                                          q40_TOF=as.numeric(quantile(x$TOF, probs=0.4)[1]),
-                                          q45_TOF=as.numeric(quantile(x$TOF, probs=0.45)[1]),
-                                          q55_TOF=as.numeric(quantile(x$TOF, probs=0.55)[1]),
-                                          q60_TOF=as.numeric(quantile(x$TOF, probs=0.6)[1]),
-                                          q65_TOF=as.numeric(quantile(x$TOF, probs=0.65)[1]),
-                                          q70_TOF=as.numeric(quantile(x$TOF, probs=0.70)[1]),
+#                                           q30_TOF=as.numeric(quantile(x$TOF, probs=0.3)[1]),
+#                                           q35_TOF=as.numeric(quantile(x$TOF, probs=0.35)[1]),
+#                                           q40_TOF=as.numeric(quantile(x$TOF, probs=0.4)[1]),
+#                                           q45_TOF=as.numeric(quantile(x$TOF, probs=0.45)[1]),
+#                                           q55_TOF=as.numeric(quantile(x$TOF, probs=0.55)[1]),
+#                                           q60_TOF=as.numeric(quantile(x$TOF, probs=0.6)[1]),
+#                                           q65_TOF=as.numeric(quantile(x$TOF, probs=0.65)[1]),
+#                                           q70_TOF=as.numeric(quantile(x$TOF, probs=0.70)[1]),
                                           q75_TOF=as.numeric(quantile(x$TOF, probs=0.75)[1]),
-                                          q80_TOF=as.numeric(quantile(x$TOF, probs=0.8)[1]),
-                                          q85_TOF=as.numeric(quantile(x$TOF, probs=0.85)[1]),
+#                                           q80_TOF=as.numeric(quantile(x$TOF, probs=0.8)[1]),
+#                                           q85_TOF=as.numeric(quantile(x$TOF, probs=0.85)[1]),
                                           q90_TOF=as.numeric(quantile(x$TOF, probs=0.90)[1]),
-                                          q95_TOF=as.numeric(quantile(x$TOF, probs=0.95)[1]),
-                                          maxTOF=as.numeric(quantile(x$TOF)[5]),
+#                                          q95_TOF=as.numeric(quantile(x$TOF, probs=0.95)[1]),
+#                                           maxTOF=as.numeric(quantile(x$TOF)[5]),
                                           meanEXT=mean(x$EXT),
                                           medianEXT=median(x$EXT),
                                           
-                                          minEXT=as.numeric(quantile(x$EXT)[1]),
-                                          q05_EXT=as.numeric(quantile(x$EXT, probs=0.05)),
+#                                           minEXT=as.numeric(quantile(x$EXT)[1]),
+#                                           q05_EXT=as.numeric(quantile(x$EXT, probs=0.05)),
                                           q10_EXT=as.numeric(quantile(x$EXT, probs=0.1)[1]),
-                                          q15_EXT=as.numeric(quantile(x$EXT, probs=0.15)[1]),
-                                          q20_EXT=as.numeric(quantile(x$EXT, probs=0.2)[1]),
+#                                           q15_EXT=as.numeric(quantile(x$EXT, probs=0.15)[1]),
+#                                           q20_EXT=as.numeric(quantile(x$EXT, probs=0.2)[1]),
                                           q25_EXT=as.numeric(quantile(x$EXT, probs=0.25)[1]),
-                                          q30_EXT=as.numeric(quantile(x$EXT, probs=0.3)[1]),
-                                          q35_EXT=as.numeric(quantile(x$EXT, probs=0.35)[1]),
-                                          q40_EXT=as.numeric(quantile(x$EXT, probs=0.4)[1]),
-                                          q45_EXT=as.numeric(quantile(x$EXT, probs=0.45)[1]),
-                                          q55_EXT=as.numeric(quantile(x$EXT, probs=0.55)[1]),
-                                          q60_EXT=as.numeric(quantile(x$EXT, probs=0.6)[1]),
-                                          q65_EXT=as.numeric(quantile(x$EXT, probs=0.65)[1]),
-                                          q70_EXT=as.numeric(quantile(x$EXT, probs=0.70)[1]),
+#                                           q30_EXT=as.numeric(quantile(x$EXT, probs=0.3)[1]),
+#                                           q35_EXT=as.numeric(quantile(x$EXT, probs=0.35)[1]),
+#                                           q40_EXT=as.numeric(quantile(x$EXT, probs=0.4)[1]),
+#                                           q45_EXT=as.numeric(quantile(x$EXT, probs=0.45)[1]),
+#                                           q55_EXT=as.numeric(quantile(x$EXT, probs=0.55)[1]),
+#                                           q60_EXT=as.numeric(quantile(x$EXT, probs=0.6)[1]),
+#                                           q65_EXT=as.numeric(quantile(x$EXT, probs=0.65)[1]),
+#                                           q70_EXT=as.numeric(quantile(x$EXT, probs=0.70)[1]),
                                           q75_EXT=as.numeric(quantile(x$EXT, probs=0.75)[1]),
-                                          q80_EXT=as.numeric(quantile(x$EXT, probs=0.8)[1]),
-                                          q85_EXT=as.numeric(quantile(x$EXT, probs=0.85)[1]),
+#                                           q80_EXT=as.numeric(quantile(x$EXT, probs=0.8)[1]),
+#                                           q85_EXT=as.numeric(quantile(x$EXT, probs=0.85)[1]),
                                           q90_EXT=as.numeric(quantile(x$EXT, probs=0.90)[1]),
-                                          q95_EXT=as.numeric(quantile(x$EXT, probs=0.95)[1]),
-                                          maxEXT=as.numeric(quantile(x$EXT)[5]),
+#                                           q95_EXT=as.numeric(quantile(x$EXT, probs=0.95)[1]),
+#                                           maxEXT=as.numeric(quantile(x$EXT)[5]),
                                           mean.red = mean(x$red, na.rm=T),
                                           median.red = median(x$red, na.rm=T),
                                           mean.gr = mean(x$green, na.rm=T),
@@ -132,32 +132,31 @@ processPheno <- function(modplate, strains) {
                                           mean.normred = mean(x$norm.red, na.rm=T),
                                           median.normred = mean(x$norm.red, na.rm=T),
                                           f.L1 = length(which(x$stage == "L1"))/length(x$stage),
-                                          f.L2 = length(which(x$stage == "L2"))/length(x$stage),
-                                          f.L3 = length(which(x$stage == "L3"))/length(x$stage),
+                                          f.L2L3 = length(which(x$stage == "L2/L3"))/length(x$stage),
                                           f.L4 = length(which(x$stage == "L4"))/length(x$stage),
                                           f.ad = length(which(x$stage == "adult"))/length(x$stage),
                                           
                                           log.meanEXT=log(mean(x$EXT)),
                                           log.medianEXT=log(median(x$EXT)),
-                                          log.minEXT=as.numeric(log(quantile(x$EXT)[1])),
-                                          log.q05_EXT=as.numeric(log(quantile(x$EXT, probs=0.05))),
+#                                           log.minEXT=as.numeric(log(quantile(x$EXT)[1])),
+#                                           log.q05_EXT=as.numeric(log(quantile(x$EXT, probs=0.05))),
                                           log.q10_EXT=as.numeric(log(quantile(x$EXT, probs=0.1)[1])),
-                                          log.q15_EXT=as.numeric(log(quantile(x$EXT, probs=0.15)[1])),
-                                          log.q20_EXT=as.numeric(log(quantile(x$EXT, probs=0.2)[1])),
+#                                           log.q15_EXT=as.numeric(log(quantile(x$EXT, probs=0.15)[1])),
+#                                           log.q20_EXT=as.numeric(log(quantile(x$EXT, probs=0.2)[1])),
                                           log.q25_EXT=as.numeric(log(quantile(x$EXT, probs=0.25)[1])),
-                                          log.q30_EXT=as.numeric(log(quantile(x$EXT, probs=0.3)[1])),
-                                          log.q35_EXT=as.numeric(log(quantile(x$EXT, probs=0.35)[1])),
-                                          log.q40_EXT=as.numeric(log(quantile(x$EXT, probs=0.4)[1])),
-                                          log.q45_EXT=as.numeric(log(quantile(x$EXT, probs=0.45)[1])),
-                                          log.q55_EXT=as.numeric(log(quantile(x$EXT, probs=0.55)[1])),
-                                          log.q60_EXT=as.numeric(log(quantile(x$EXT, probs=0.6)[1])),
-                                          log.q65_EXT=as.numeric(log(quantile(x$EXT, probs=0.65)[1])),
-                                          log.q70_EXT=as.numeric(log(quantile(x$EXT, probs=0.70)[1])),
+#                                           log.q30_EXT=as.numeric(log(quantile(x$EXT, probs=0.3)[1])),
+#                                           log.q35_EXT=as.numeric(log(quantile(x$EXT, probs=0.35)[1])),
+#                                           log.q40_EXT=as.numeric(log(quantile(x$EXT, probs=0.4)[1])),
+#                                           log.q45_EXT=as.numeric(log(quantile(x$EXT, probs=0.45)[1])),
+#                                           log.q55_EXT=as.numeric(log(quantile(x$EXT, probs=0.55)[1])),
+#                                           log.q60_EXT=as.numeric(log(quantile(x$EXT, probs=0.6)[1])),
+#                                           log.q65_EXT=as.numeric(log(quantile(x$EXT, probs=0.65)[1])),
+#                                           log.q70_EXT=as.numeric(log(quantile(x$EXT, probs=0.70)[1])),
                                           log.q75_EXT=as.numeric(log(quantile(x$EXT, probs=0.75)[1])),
-                                          log.q80_EXT=as.numeric(log(quantile(x$EXT, probs=0.8)[1])),
-                                          log.q85_EXT=as.numeric(log(quantile(x$EXT, probs=0.85)[1])),
+#                                           log.q80_EXT=as.numeric(log(quantile(x$EXT, probs=0.8)[1])),
+#                                           log.q85_EXT=as.numeric(log(quantile(x$EXT, probs=0.85)[1])),
                                           log.q90_EXT=as.numeric(log(quantile(x$EXT, probs=0.90)[1])),
-                                          log.q95_EXT=as.numeric(log(quantile(x$EXT, probs=0.95)[1])),
+#                                           log.q95_EXT=as.numeric(log(quantile(x$EXT, probs=0.95)[1])),
                                           log.maxEXT=as.numeric(log(quantile(x$EXT)[5])),
                                           log.mean.red = log(mean(x$red, na.rm=T)),
                                           log.median.red = log(median(x$red, na.rm=T)),
@@ -199,17 +198,6 @@ possContam <- function(procDataFrame){
     } 
 }
 
-
-
-
-
-
-
-
-
-
-
-
 #Function to read in txt file from sorter
 readSorter <- function(file, tofmin=60, tofmax=2000, extmin=20, extmax=5000)  {
   data <- read.delim(file=file, header=T, na.strings=c("n/a"), as.is=T, stringsAsFactors=F)
@@ -238,10 +226,10 @@ sortertoDF <- function(file, tofmin=60, tofmax=2000, extmin=20, extmax=5000) {
   modplate$worm <- plateprediction[,"1"]
   modplate$call50 <- factor(as.numeric(modplate$worm>0.5), levels=c(1,0), labels=c("worm", "bubble"))
   modplate$norm.red <- modplate$red/modplate$TOF
-  modplate$stage <- ifelse(modplate$TOF<=100, "L1", 
-                           ifelse(modplate$TOF>100 & modplate$TOF<=250, "L2", 
-                                  ifelse(modplate$TOF>250 & modplate$TOF<=400, "L3",
-                                         ifelse(modplate$TOF>400 & modplate$TOF<=700, "L4", "adult"))))
+  modplate$stage <- ifelse(modplate$TOF>=60 & modplate$TOF<90, "L1", 
+                           ifelse(modplate$TOF>=90 & modplate$TOF<200, "L2/L3",
+                                  ifelse(modplate$TOF>=200 & modplate$TOF<300, "L4",
+                                         ifelse(modplate$TOF>=300, "adult", NA))))
   return(modplate)
 }
 
@@ -264,146 +252,8 @@ sortertoDFnoSVM <- function(file, tofmin=60, tofmax=2000, extmin=20, extmax=5000
   return(modplate)
 }
 
-#Function to process worm data frame to phenotype data frame by row and column also add concentration
-processPhenoConc <- function(modplate, strains, conc) {
-  require(plyr)
-  processed <- ddply(.data=modplate[modplate$call50=="worm",], .variables=c("row", "col"), 
-                     .fun=function(x){c(n=length(x$TOF), 
-                                        meanTOF=mean(x$TOF), 
-                                        medianTOF=median(x$TOF),
-                                        minTOF=as.numeric(quantile(x$TOF)[1]),
-                                        q05=as.numeric(quantile(x$TOF, probs=0.05)),
-                                        q10=as.numeric(quantile(x$TOF, probs=0.1)[1]),
-                                        q15=as.numeric(quantile(x$TOF, probs=0.15)[1]), 
-                                        q20=as.numeric(quantile(x$TOF, probs=0.2)[1]),
-                                        q25=as.numeric(quantile(x$TOF, probs=0.25)[1]),
-                                        q30=as.numeric(quantile(x$TOF, probs=0.3)[1]),
-                                        q35=as.numeric(quantile(x$TOF, probs=0.35)[1]),
-                                        q40=as.numeric(quantile(x$TOF, probs=0.4)[1]),
-                                        q45=as.numeric(quantile(x$TOF, probs=0.45)[1]),
-                                        q55=as.numeric(quantile(x$TOF, probs=0.55)[1]),
-                                        q60=as.numeric(quantile(x$TOF, probs=0.6)[1]),
-                                        q65=as.numeric(quantile(x$TOF, probs=0.65)[1]),
-                                        q70=as.numeric(quantile(x$TOF, probs=0.70)[1]),
-                                        q75=as.numeric(quantile(x$TOF, probs=0.75)[1]),
-                                        q80=as.numeric(quantile(x$TOF, probs=0.8)[1]),
-                                        q85=as.numeric(quantile(x$TOF, probs=0.85)[1]),
-                                        q90=as.numeric(quantile(x$TOF, probs=0.90)[1]),
-                                        q95=as.numeric(quantile(x$TOF, probs=0.95)[1]),
-                                        maxTOF=as.numeric(quantile(x$TOF)[5]),
-                                        meanEXT=mean(x$EXT), 
-                                        medianEXT=median(x$EXT)
-                     )}, .drop=F)
-  analysis <- data.frame(strain = as.character(strains), processed)
-  analysis <- analysis[order(analysis$strain),]
-  analysis <- analysis[order(analysis$row, analysis$col),]
-  analysis <- droplevels(na.omit(analysis))
-  analysis$conc <- ifelse(analysis$col %in% c(1, 7), conc[1], 
-                          ifelse(analysis$col %in% c(2,8), conc[2], 
-                                 ifelse(analysis$col %in% c(3,9), conc[3], 
-                                        ifelse(analysis$col %in% c(4,10), conc[4],
-                                               ifelse(analysis$col %in% c(5,11), conc[5], NA)))))
-  return(analysis)
-}
-
-
-#Process by strain
-processFullbyStrain <- function(results){
-  ddply(.data=results, .var=c("strain"), .fun=function(x) {c(broodmedian=median(x$n),
-                                                             broodmean=mean(x$n),
-                                                             TOFmean=median(x$meanTOF), TOFmedian=median(x$medianTOF), 
-                                                             EXTmean=median(x$meanEXT), EXTmedian=median(x$medianEXT))})
-}
-
-#Process by strain and concentration for dose response summary
-processFullbyStrainConc <- function(results){
-  ddply(.data=results, .var=c("strain", "conc"), .fun=function(x) {c(broodmedian=median(x$n), TOFmean=median(x$meanTOF), TOFmedian=median(x$medianTOF),
-                                                                     TOFmin=median(x$minTOF), TOFmax=median(x$maxTOF), TOF25=median(x$q25), TOF75=median(x$q75),
-                                                                     broodmean = mean(x$n))})
-}
-#Strain lists need to be expanded depending on the setup orientation on plate
-
-#Expand strain list to seven replicates with blank by row H
-expandStrainlist_7repsbyCol <- function(setup){
-  
-  new.setup <- matrix(ncol=12, nrow=8)
-  
-  for (i in c(1:12)) {
-    
-    new.setup[,i]<-setup[i]
-    new.setup[8,]<- NA
-    
-  }
-  
-  return(c(t(new.setup)))
-  
-}
-
-#Expand strain list to five replicates with blanks in columns 6 and 12
-expandStrainlist_5repsperStrain <- function(setup, num.strains){
-  
-  new.setup <- matrix(ncol=num.strains, nrow=6)
-  
-  for (i in c(1:num.strains)) {
-    
-    new.setup[,i]<-setup[i]
-    new.setup[6,]<- NA
-    
-  }
-  
-  return(c(new.setup))
-  
-}
-
-#Expand strain list to three replicates with blanks in columns 4, 8, and 12
-expandStrainlist_3repsperStrain <- function(setup, num.strains){
-  
-  new.setup <- matrix(ncol=num.strains, nrow=4)
-  
-  for (i in c(1:num.strains)) {
-    
-    new.setup[,i]<-setup[i]
-    new.setup[4,]<- NA
-    
-  }
-  
-  return(c(new.setup))
-  
-}
-
-#Expand strain list to 48 strains per plate
-expandStrainlist_48strains <- function(setup){
-  
-  new.setup <- matrix(ncol=length(setup), nrow=2)
-  
-  for (i in c(1:length(setup))) {
-    
-    new.setup[,i]<-setup[i]
-    new.setup[2,]<- NA
-    
-  }
-  
-  return(c(new.setup))
-  
-}
-
-expandStrainlist_dose <- function(setup){
-  
-  new.setup <- matrix(ncol=16, nrow=6)
-  
-  for (i in 1:length(setup)) {
-    
-    new.setup[,i]<-setup[i]
-    
-    
-  }
-  
-  return(c(new.setup))
-  
-}
 
 #Function to remove contaminated wells
-
 removeWells <- function(proc, badwells) {
   sp.bw <- str_split(badwells, "", 3)
   for (i in seq(1, length(sp.bw))) {
@@ -412,14 +262,4 @@ removeWells <- function(proc, badwells) {
     proc[which(proc$row == row & proc$col == col),-(1:3)] <- NA
   }
   return(proc)
-}
-
-#Function to make sure all wells were recorded by the sorter software
-
-checkData <- function(sorterDF){
-  complete <- paste(rep(c("A", "B", "C", "D", "E", "F", "G", "H"), each =12), rep(seq(1,12), 8), sep="")
-  row.col <- paste(sorterDF$row, sorterDF$col, sep="")
-  num <- length(unique(row.col))
-  missing <- complete[is.na(match(complete, row.col))]
-  return(missing)
 }
