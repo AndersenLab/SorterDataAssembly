@@ -8,7 +8,7 @@ require(knitr)
 require(ggplot2)
 require(reshape)
 
-options(echo=TRUE)
+options(echo=FALSE)
 
 args <- commandArgs(trailingOnly = TRUE)
 makeReports <- as.logical(args[1])
@@ -499,6 +499,6 @@ for(dir in seq(1,length(dataDirs))){
 }
 
 nameFrame = info(dir.data, 0)
-fileName = paste0(nameFrame$experiment[1], nameFrame$round[1], "_complete2.csv")
+fileName = paste0(nameFrame$experiment[1], nameFrame$round[1], "_complete.csv")
 
 write.csv(output, file.path("~/Dropbox/HTA/Results/ProcessedData", fileName), row.names=FALSE)
