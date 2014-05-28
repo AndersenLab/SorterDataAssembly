@@ -131,8 +131,8 @@ processPheno <- function(modplate, strains) {
                                           q90_red = as.numeric(quantile(x$red, probs=0.9)[1]),
 #                                           mean.gr = mean(x$green, na.rm=T),
 #                                           median.gr = median(x$green, na.rm=T),
-#                                           mean.y = mean(x$yellow, na.rm=T),
-#                                           median.y = median(x$yellow, na.rm=T),
+                                          mean.y = mean(x$yellow, na.rm=T),
+                                          median.y = median(x$yellow, na.rm=T),
                                           mean.normred = mean(x$norm.red, na.rm=T),
                                           q10_normred = as.numeric(quantile(x$norm.red, probs=0.1)[1]),
                                           q25_normred = as.numeric(quantile(x$norm.red, probs=0.25)[1]),
@@ -177,7 +177,7 @@ processPheno <- function(modplate, strains) {
                                           log.q25_normred = as.numeric(log(quantile(x$norm.red, probs=0.25)[1])),
                                           log.median.normred = log(mean(x$norm.red, na.rm=T)),
                                           log.q75_normred = as.numeric(log(quantile(x$norm.red, probs=0.75)[1])),
-                                          log.q90_normred = as.numeric(log(quantile(x$norm.red, probs=0.9)[1])),
+                                          log.q90_normred = as.numeric(log(quantile(x$norm.red, probs=0.9)[1]))
                        )}, .drop=F)
     
     analysis <- data.frame(strain = as.character(strains), processed)
