@@ -35,6 +35,20 @@ possibleContam
 ```
 
 
+NA Count:
+```{r echo=FALSE, warning=FALSE}
+naCount = readRDS(file.path(dir,"naCount.rds"))
+naCount
+```
+
+
+NA Strains:
+```{r echo=FALSE, warning=FALSE}
+naStrains = readRDS(file.path(dir,"naStrains.rds"))
+naStrains
+```
+
+
 Number of worms in each well:
 ```{r echo=FALSE,fig.width=15,fig.height=10, warning=FALSE}
 plot.score.pop=readRDS(file.path(dir,"plot-score-pop.rds"))

@@ -311,6 +311,11 @@ for(dir in seq(1,length(dataDirs))){
         proc<-score.pheno[[i]]
         saveRDS(proc,file=file.path(dir.existing,"temp","proc.rds"))
         
+        naCount <- nrow(proc[as.numeric(as.character(proc$col)) %% 2 == 1 & is.na(proc$n),])
+        naStrains <- as.character(proc[as.numeric(as.character(proc$col)) %% 2 == 1 & is.na(proc$n),]$strain)
+        saveRDS(naCount, file=file.path(dir.existing,"temp","naCount.rds"))
+        saveRDS(naStrains, file=file.path(dir.existing,"temp","naStrains.rds"))
+        
         possibleContam <- possContam(proc)
         
         saveRDS(possibleContam,file=file.path(dir.existing,"temp","possibleContam.rds"))
