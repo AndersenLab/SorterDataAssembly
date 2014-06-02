@@ -455,15 +455,15 @@ for(dir in seq(1,length(dataDirs))){
                 plate <- data[[plates[j]]]
                 for(k in startCol:ncol(plate)){
                     plate <- tryCatch({
-                        cbind(plate, residuals(lm(plate[,k]~controlPlate[,k], na.action = na.exclude)),
-                              residuals(lm(plate[,k]~plate$n, na.action = na.exclude)),
-                              residuals(lm(plate[,k]~plate$n+controlPlate[,k], na.action = na.exclude)) #Do you want additive or interaction effects??
-                        )
+                        cbind(plate, residuals(lm(plate[,k]~controlPlate[,k], na.action = na.exclude)))
+#                               residuals(lm(plate[,k]~plate$n, na.action = na.exclude)),
+#                               residuals(lm(plate[,k]~plate$n+controlPlate[,k], na.action = na.exclude)) #Do you want additive or interaction effects??
+#                         )
                     }, warning = function(war){
-                        plate = cbind(plate, residuals(lm(plate[,k]~controlPlate[,k], na.action = na.exclude)),
-                                      residuals(lm(plate[,k]~plate$n, na.action = na.exclude)),
-                                      residuals(lm(plate[,k]~plate$n+controlPlate[,k], na.action = na.exclude)) #Do you want additive or interaction effects??
-                        )
+                        plate = cbind(plate, residuals(lm(plate[,k]~controlPlate[,k], na.action = na.exclude)))
+#                                       residuals(lm(plate[,k]~plate$n, na.action = na.exclude)),
+#                                       residuals(lm(plate[,k]~plate$n+controlPlate[,k], na.action = na.exclude)) #Do you want additive or interaction effects??
+#                         )
                         print(war)
                         return(plate)
                     }, error = function(err){
@@ -473,8 +473,8 @@ for(dir in seq(1,length(dataDirs))){
                     })
                     
                     colnames(plate)[ncol(plate)-2] = paste0("resid.control.",colnames(plate)[k])
-                    colnames(plate)[ncol(plate)-1] = paste0("resid.n.",colnames(plate)[k])
-                    colnames(plate)[ncol(plate)] = paste0("resid.control_n.",colnames(plate)[k])
+#                     colnames(plate)[ncol(plate)-1] = paste0("resid.n.",colnames(plate)[k])
+#                     colnames(plate)[ncol(plate)] = paste0("resid.control_n.",colnames(plate)[k])
                 }
                 plate <- tryCatch({
                     plate = cbind(plate, residuals(lm(plate$n~controlPlate$n, na.action = na.exclude)),
