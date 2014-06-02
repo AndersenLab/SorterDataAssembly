@@ -7,6 +7,7 @@ require(markdown)
 require(knitr)
 require(ggplot2)
 require(reshape)
+require(dplyr)
 
 options(echo=FALSE)
 
@@ -465,15 +466,26 @@ for(dir in seq(1,length(dataDirs))){
         for(i in 1:length(data)){
             if(is.null(controlData[[i]])){
                 controlData[[i]] = data.frame(matrix(nrow=96, ncol=59))
-                colnames(controlData[[j]]) = columnNames
+                colnames(controlData[[i]]) = columnNames
             }
         }
         controlsData = append(controlsData, list(do.call(rbind,controlData)))
     }
 }
 
-plateD = data.frame(do.call(rbind, plateData))
-controlsD = data.frame(do.call(rbind, controlsData))
+getResid=function(x){
+    residuals = list()
+    for(i in 10:ncol(x)){
+        residuals[[i]] = tryCatch(residuals(lm(x[,i]~x$assay)), error = function(err){NA})
+    }
+    return(residuals)
+}
+
+getResid(plateData)
+
+plateData = data.frame(do.call(rbind, plateData))
+controlsData = data.frame(do.call(rbind, controlsData))
+testdf = plateData %.% group_by(drug) %.% do(data.frame(getResid(.)))
 
 
 nameFrame = info(dir.data, 0)
