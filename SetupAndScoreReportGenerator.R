@@ -398,35 +398,41 @@ completeDF <- data.frame(lapply(completeDF, function(x) replace(x, is.infinite(x
 
 if(length(levels(completeDF$assay)) > 1){
     startCol <- ncol(completeDF) + 1
-    for (i in seq(10,ncol(completeDF))){
-        colName <- colnames(completeDF)[i]
-        vectorName <- paste0("resid.assay.",colName)
-        assign("vector", residuals(lm(completeDF[,i]~completeDF$assay, na.action = na.exclude)))
-        completeDF <- cbind(completeDF, vector)
-        colnames(completeDF)[ncol(completeDF)] = vectorName
-    }
+#     for (i in seq(10,ncol(completeDF))){
+#         colName <- colnames(completeDF)[i]
+#         vectorName <- paste0("resid.assay.",colName)
+#         assign("vector", residuals(lm(completeDF[,i]~completeDF$assay, na.action = na.exclude)))
+#         completeDF <- cbind(completeDF, vector)
+#         colnames(completeDF)[ncol(completeDF)] = vectorName
+#     }
 } else {
     startCol <- 10 
 }
 
-assays <- dlply(completeDF, .variables = "assay")
-for(i in seq(1, length(assays))){
-    assays[[i]] = dlply(assays[[i]], .variables = "plate")
-}
+assays <- dlply(completeDF, .variables = "assay"
+# for(i in seq(1, length(assays))){
+#     assays[[i]] = dlply(assays[[i]], .variables = "plate")
+# }
 
 
 output = data.frame()
+plateData = list()
+
+controlsData = list()
 
 for(dir in seq(1,length(dataDirs))){
     dir.data <- dataDirs[dir]
     data <- assays[[dir]]
     
+    plateData = append(plateData, list(do.call(rbind,data)))
+    
     #Creating dataframes of control population and growth (n, TOF/EXT 25/50/75/mean)
     source(file.path(dir.root, dir.data, file.controls))
     
     controlDFs <- list()
+    controlData = list()
+    length(controlData) = length(data)
     
-    finalPlates <- data.frame()
     if (length(controlPlates) != 0){
         for(i in 1:length(controlPlates)){
             controls <- controlPlates[[i]]
@@ -445,63 +451,30 @@ for(dir in seq(1,length(dataDirs))){
             }
             colnames(controlDF) = colnames(data[[controls[1]]])
             controlDF <- as.data.frame(controlDF)
+            columnNames = colnames(controlDF)
             controlDFs <- append(controlDFs, list(controlDF))
-        }
-        
-        for(i in 1:length(testPlates)){
-            plates <- testPlates[[i]]
-            controlPlate <- controlDFs[[i]]
-            for(j in 1:length(plates)){
-                plate <- data[[plates[j]]]
-                for(k in startCol:ncol(plate)){
-                    plate <- tryCatch({
-                        cbind(plate, residuals(lm(plate[,k]~controlPlate[,k], na.action = na.exclude)))
-#                               residuals(lm(plate[,k]~plate$n, na.action = na.exclude)),
-#                               residuals(lm(plate[,k]~plate$n+controlPlate[,k], na.action = na.exclude)) #Do you want additive or interaction effects??
-#                         )
-                    }, warning = function(war){
-                        plate = cbind(plate, residuals(lm(plate[,k]~controlPlate[,k], na.action = na.exclude)))
-#                                       residuals(lm(plate[,k]~plate$n, na.action = na.exclude)),
-#                                       residuals(lm(plate[,k]~plate$n+controlPlate[,k], na.action = na.exclude)) #Do you want additive or interaction effects??
-#                         )
-                        print(war)
-                        return(plate)
-                    }, error = function(err){
-                        plate <- cbind(plate, NA, NA, NA)
-                        print("An error was handled, NAs inserted.")
-                        return (plate)
-                    })
-                    
-                    colnames(plate)[ncol(plate)-2] = paste0("resid.control.",colnames(plate)[k])
-#                     colnames(plate)[ncol(plate)-1] = paste0("resid.n.",colnames(plate)[k])
-#                     colnames(plate)[ncol(plate)] = paste0("resid.control_n.",colnames(plate)[k])
-                }
-                plate <- tryCatch({
-                    plate = cbind(plate, residuals(lm(plate$n~controlPlate$n, na.action = na.exclude)),
-                                  residuals(lm(plate$n~controlPlate$norm.n, na.action = na.exclude)),
-                                  residuals(lm(plate$norm.n~controlPlate$n, na.action = na.exclude)),
-                                  residuals(lm(plate$norm.n~controlPlate$norm.n, na.action = na.exclude)))
-                }, warning = function(war){
-                    plate = cbind(plate, residuals(lm(plate$n~controlPlate$n, na.action = na.exclude)),
-                                  residuals(lm(plate$n~controlPlate$norm.n, na.action = na.exclude)),
-                                  residuals(lm(plate$norm.n~controlPlate$n, na.action = na.exclude)),
-                                  residuals(lm(plate$norm.n~controlPlate$norm.n, na.action = na.exclude)))
-                    print(war)
-                    return(plate)
-                }, error = function(err){
-                    plate = cbind(plate, NA, NA, NA)
-                    print("An error was handled, NAs inserted.")
-                    return (plate)
-                })
-                colnames(plate)[ncol(plate)-3] = "resid.control.n.resid.assay.n"
-                colnames(plate)[ncol(plate)-2] = "resid.control.norm.n.resid.assay.n"
-                colnames(plate)[ncol(plate)-1] = "resid.control.n.resid.assay.norm.n"
-                colnames(plate)[ncol(plate)] = "resid.control.norm.n.resid.assay.norm.n"
-                output = rbind.fill(output, as.data.frame(plate))
+            for(j in controlPlates[[i]]){
+                controlData[[j]] = data.frame(matrix(nrow=96, ncol=59))
+                colnames(controlData[[j]]) = columnNames
+            }
+            for(j in testPlates[[i]]){
+                controlData[[j]] = controlDF
+                colnames(controlData[[j]]) = columnNames
             }
         }
+        for(i in 1:length(data)){
+            if(is.null(controlData[[i]])){
+                controlData[[i]] = data.frame(matrix(nrow=96, ncol=59))
+                colnames(controlData[[j]]) = columnNames
+            }
+        }
+        controlsData = append(controlsData, list(do.call(rbind,controlData)))
     }
 }
+
+plateD = data.frame(do.call(rbind, plateData))
+controlsD = data.frame(do.call(rbind, controlsData))
+
 
 nameFrame = info(dir.data, 0)
 fileName = paste0(nameFrame$experiment[1], nameFrame$round[1], "_complete.csv")
