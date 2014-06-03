@@ -7,6 +7,7 @@ require(markdown)
 require(knitr)
 require(ggplot2)
 require(reshape)
+require(dplyr)
 
 options(echo=FALSE)
 
@@ -481,7 +482,5 @@ finalDF = finalDF[order(finalDF$assay, finalDF$plate),]
 
 nameFrame = info(dir.data, 0)
 fileName = paste0(nameFrame$experiment[1], nameFrame$round[1], "_complete.csv")
-
-write.csv(finalDF, "TestDF.csv", row.names=FALSE)
 
 write.csv(finalDF, file.path("~/Dropbox/HTA/Results/ProcessedData", fileName), row.names=FALSE)
