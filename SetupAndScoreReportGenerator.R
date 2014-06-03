@@ -7,7 +7,6 @@ require(markdown)
 require(knitr)
 require(ggplot2)
 require(reshape)
-require(dplyr)
 
 options(echo=FALSE)
 
@@ -397,26 +396,10 @@ completeDF <- completeDF[,2:ncol(completeDF)]
 # Remove infinite values from taking log of columns with 0 as value
 completeDF <- data.frame(lapply(completeDF, function(x) replace(x, is.infinite(x),NA)))
 
-if(length(levels(completeDF$assay)) > 1){
-    startCol <- ncol(completeDF) + 1
-#     for (i in seq(10,ncol(completeDF))){
-#         colName <- colnames(completeDF)[i]
-#         vectorName <- paste0("resid.assay.",colName)
-#         assign("vector", residuals(lm(completeDF[,i]~completeDF$assay, na.action = na.exclude)))
-#         completeDF <- cbind(completeDF, vector)
-#         colnames(completeDF)[ncol(completeDF)] = vectorName
-#     }
-} else {
-    startCol <- 10 
-}
+startCol <- 10 
 
-assays <- dlply(completeDF, .variables = "assay"
-# for(i in seq(1, length(assays))){
-#     assays[[i]] = dlply(assays[[i]], .variables = "plate")
-# }
+assays <- dlply(completeDF, .variables = "assay")
 
-
-output = data.frame()
 plateData = list()
 
 controlsData = list()
@@ -424,6 +407,8 @@ controlsData = list()
 for(dir in seq(1,length(dataDirs))){
     dir.data <- dataDirs[dir]
     data <- assays[[dir]]
+    
+    columnNames = colnames(data)
     
     plateData = append(plateData, list(do.call(rbind,data)))
     
@@ -438,28 +423,18 @@ for(dir in seq(1,length(dataDirs))){
         for(i in 1:length(controlPlates)){
             controls <- controlPlates[[i]]
             means <- list()
-            length(means) = ncol(data[[controls[1]]])
-            for(j in 1:length(controls)){
-                plate <- data[[controls[j]]]
-                output <- rbind.fill(output, as.data.frame(plate))
-                for(k in 10:ncol(plate)){
-                    means[[k]] = cbind(means[[k]], plate[,k])
-                }
-            }
-            controlDF <- plate[,1:9]
-            for(j in 10:ncol(data[[controls[1]]])){
-                controlDF <- as.data.frame(cbind(controlDF, rowMeans(means[[j]], na.rm = TRUE)))
-            }
-            colnames(controlDF) = colnames(data[[controls[1]]])
-            controlDF <- as.data.frame(controlDF)
-            columnNames = colnames(controlDF)
-            controlDFs <- append(controlDFs, list(controlDF))
+            length(means) = ncol(data)
+            plates <- data[data$plate %in% controls,]
+            colMeans = function(x){return(as.data.frame(do.call(cbind, lapply(x[,10:length(x)], function(y){mean(y, na.rm = TRUE)}))))}
+            meanPlate = plates %>% group_by(row, col) %>% do(data.frame(means = colMeans(.)))
+            controlPlate = as.data.frame(cbind(data.frame(matrix(nrow=96, ncol=7)), meanPlate))
+            
             for(j in controlPlates[[i]]){
                 controlData[[j]] = data.frame(matrix(nrow=96, ncol=59))
                 colnames(controlData[[j]]) = columnNames
             }
             for(j in testPlates[[i]]){
-                controlData[[j]] = controlDF
+                controlData[[j]] = controlPlate
                 colnames(controlData[[j]]) = columnNames
             }
         }
@@ -477,6 +452,9 @@ for(dir in seq(1,length(dataDirs))){
 
 plateData = data.frame(do.call(rbind, plateData))
 controlsData = data.frame(do.call(rbind, controlsData))
+
+plateData[is.na(plateData$strain), 10:ncol(plateData)] = NA
+controlsData[is.na(controlsData$strain), 10:ncol(controlsData)] = NA
 
 completePlates = list()
 
