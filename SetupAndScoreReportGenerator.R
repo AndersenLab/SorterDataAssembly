@@ -473,22 +473,27 @@ for(dir in seq(1,length(dataDirs))){
     }
 }
 
-getResid=function(x){
-    residuals = list()
-    for(i in 10:ncol(x)){
-        residuals[[i]] = tryCatch(residuals(lm(x[,i]~x$assay)), error = function(err){NA})
-    }
-    return(residuals)
-}
 
-getResid(plateData)
 
 plateData = data.frame(do.call(rbind, plateData))
 controlsData = data.frame(do.call(rbind, controlsData))
-testdf = plateData %.% group_by(drug) %.% do(data.frame(getResid(.)))
 
+completePlates = list()
+
+for(i in unique(plateData$drug)){
+    plate = plateData[plateData$drug == i,]
+    control = controlsData[plateData$drug == i,]
+    for(j in startCol:ncol(plate)){
+        residuals = tryCatch({residuals(lm(plate[,j]~plate$assay+control[,j], na.action = na.exclude))}, error = function(err){print(err);return(rep(NA, nrow(plate)))})
+        plate = as.data.frame(cbind(plate, residuals))
+        colnames(plate)[ncol(plate)] = paste0("resid.", colnames(plate)[j])
+    }
+    completePlates = append(completePlates, list(plate))
+}
+
+finalDF = ldply(completePlates)
 
 nameFrame = info(dir.data, 0)
 fileName = paste0(nameFrame$experiment[1], nameFrame$round[1], "_complete.csv")
 
-write.csv(output, file.path("~/Dropbox/HTA/Results/ProcessedData", fileName), row.names=FALSE)
+write.csv(finalDF, file.path("~/Dropbox/HTA/Results/ProcessedData", fileName), row.names=FALSE)
