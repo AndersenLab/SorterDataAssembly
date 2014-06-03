@@ -410,7 +410,7 @@ for(dir in seq(1,length(dataDirs))){
     
     columnNames = colnames(data)
     
-    plateData = append(plateData, list(do.call(rbind,data)))
+    plateData = append(plateData, list(data))
     
     #Creating dataframes of control population and growth (n, TOF/EXT 25/50/75/mean)
     source(file.path(dir.root, dir.data, file.controls))
@@ -418,6 +418,8 @@ for(dir in seq(1,length(dataDirs))){
     controlDFs <- list()
     controlData = list()
     length(controlData) = length(data)
+    
+    assay = unique(data$assay)
     
     if (length(controlPlates) != 0){
         for(i in 1:length(controlPlates)){
@@ -438,7 +440,7 @@ for(dir in seq(1,length(dataDirs))){
                 colnames(controlData[[j]]) = columnNames
             }
         }
-        for(i in 1:length(data)){
+        for(i in 1:length(unique(data$plate))){
             if(is.null(controlData[[i]])){
                 controlData[[i]] = data.frame(matrix(nrow=96, ncol=59))
                 colnames(controlData[[i]]) = columnNames
@@ -454,7 +456,10 @@ plateData = data.frame(do.call(rbind, plateData))
 controlsData = data.frame(do.call(rbind, controlsData))
 
 plateData[is.na(plateData$strain), 10:ncol(plateData)] = NA
-controlsData[is.na(controlsData$strain), 10:ncol(controlsData)] = NA
+controlsData[controlsData$col %% 2 == 0 | is.na(controlsData$col), 10:ncol(controlsData)] = NA
+
+#important to make sure that the plate data matches the order of the control data
+plateData = plateData[order(plateData$assay, plateData$plate),]
 
 completePlates = list()
 
@@ -462,7 +467,9 @@ for(i in unique(plateData$drug)){
     plate = plateData[plateData$drug == i,]
     control = controlsData[plateData$drug == i,]
     for(j in startCol:ncol(plate)){
-        residuals = tryCatch({residuals(lm(plate[,j]~plate$assay+control[,j], na.action = na.exclude))}, error = function(err){print(err);return(rep(NA, nrow(plate)))})
+        residuals = tryCatch({residuals(lm(plate[,j]~plate$assay+control[,j], na.action = na.exclude))},
+                             error = function(err){tryCatch({residuals(lm(plate[,j]~control[,j], na.action = na.exclude))},
+                                                            error = function(err){return(rep(NA, nrow(plate)))})})
         plate = as.data.frame(cbind(plate, residuals))
         colnames(plate)[ncol(plate)] = paste0("resid.", colnames(plate)[j])
     }
@@ -470,8 +477,11 @@ for(i in unique(plateData$drug)){
 }
 
 finalDF = ldply(completePlates)
+finalDF = finalDF[order(finalDF$assay, finalDF$plate),]
 
 nameFrame = info(dir.data, 0)
 fileName = paste0(nameFrame$experiment[1], nameFrame$round[1], "_complete.csv")
+
+write.csv(finalDF, "TestDF.csv", row.names=FALSE)
 
 write.csv(finalDF, file.path("~/Dropbox/HTA/Results/ProcessedData", fileName), row.names=FALSE)
