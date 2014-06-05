@@ -8,6 +8,7 @@ require(knitr)
 require(ggplot2)
 require(reshape)
 require(dplyr)
+require(COPASutils)
 
 options(echo=FALSE)
 
