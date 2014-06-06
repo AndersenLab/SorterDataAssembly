@@ -11,7 +11,7 @@ print (colors.FINISH + "\nPlateSticher finished running, now starting " +
        "data assembly.\n" + colors.DEFAULT)
 
 string = (colors.PROMPT + "\nDo you want to generate all of the " +
-          "setup and score reports? (y/n, answering no will generate only" +
+          "setup and score reports? (y/n, answering no will generate only " +
           "the final data frame .csv file): " + colors.DEFAULT)
 answer = raw_input(string)
 
