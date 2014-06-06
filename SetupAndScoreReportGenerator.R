@@ -10,7 +10,7 @@ require(reshape)
 require(dplyr)
 require(COPASutils)
 
-options(echo=FALSE)
+options(echo=TRUE)
 
 args <- commandArgs(trailingOnly = TRUE)
 makeReports <- as.logical(args[1])
@@ -106,12 +106,10 @@ for(dir in seq(1,length(dataDirs))){
     setwd(file.path(dir.root,dir.data,dir.score))
     score.filelist<-dir(pattern="*.txt")
     score.plate<-llply(score.filelist,function(x){plateno(x)})
-    score.df<-llply(score.filelist,function(x){readSorter(x)})
-    
     
     
     #Create a list of scoring results with bubbles sccounted for with the SVM
-    score.modplate<-llply(score.filelist,function(x){sortertoDF(x)})
+    score.modplate<-llply(score.filelist,function(x){readPlate_worms(x)})
     
     fileName <- file.path(dir.root,dir.data,"results",paste0(experimentName(dir.data),"_rawScoringData.Rds"))
     saveRDS(score.modplate, fileName)
@@ -223,7 +221,7 @@ for(dir in seq(1,length(dataDirs))){
     
     #score.pheno = list of processed score datasets with phenotype information (TOF/EXT quantiles etc)
     #without t(strains), strain matrix won't match up with plate setup
-    score.pheno<-llply(score.modplate,function(x){processPheno(x,t(strains))})
+    score.pheno<-llply(score.modplate,function(y){summarizePlate_worms(y,t(strains), quantiles=TRUE, log=TRUE)})
     
     
     #adds to score.pheno datasets a column of n normalized by number sorted in setup
@@ -277,11 +275,6 @@ for(dir in seq(1,length(dataDirs))){
     date=Sys.Date()
     date=as.character(format(date,format="%Y%m%d"))
     
-    
-    score.pheno[is.na(score.pheno)]<-0
-    
-    t = meltdf(score.pheno[[1]])
-    
     melted.score.pheno<-llply(score.pheno,function(x){meltdf(x)})
     
     #Create complete data frame
@@ -313,8 +306,8 @@ for(dir in seq(1,length(dataDirs))){
         proc<-score.pheno[[i]]
         saveRDS(proc,file=file.path(dir.existing,"temp","proc.rds"))
         
-        naCount <- nrow(proc[as.numeric(as.character(proc$col)) %% 2 == 1 & is.na(proc$n),])
-        naStrains <- as.character(proc[as.numeric(as.character(proc$col)) %% 2 == 1 & is.na(proc$n),]$strain)
+        naCount <- nrow(proc[as.numeric(as.numeric(proc$col)) %% 2 == 1 & is.na(proc$n),])
+        naStrains <- as.character(proc[as.numeric(proc$col) %% 2 == 1 & is.na(proc$n),]$strain)
         saveRDS(naCount, file=file.path(dir.existing,"temp","naCount.rds"))
         saveRDS(naStrains, file=file.path(dir.existing,"temp","naStrains.rds"))
         
@@ -336,10 +329,10 @@ for(dir in seq(1,length(dataDirs))){
         
         proc[is.na(proc)]<--1
         proc$norm.n<-round(proc$norm.n,0)
-        proc$mean.normred<-round(proc$mean.normred,2)
-        proc$median.normred<-round(proc$median.normred,2)
-        proc$meanTOF<-round(proc$meanTOF,1)
-        proc$meanEXT<-round(proc$meanEXT,1)
+        proc$mean.norm.red<-round(proc$mean.norm.red,2)
+        proc$median.norm.red<-round(proc$median.norm.red,2)
+        proc$mean.TOF<-round(proc$mean.TOF,1)
+        proc$mean.EXT<-round(proc$mean.EXT,1)
         
         
         
@@ -349,10 +342,10 @@ for(dir in seq(1,length(dataDirs))){
             
             saveRDS(plot.score.pop,file=file.path(dir.existing,"temp","plot-score-pop.rds"))
             
-            plot.score.red<-ggplot(proc)+geom_rect(aes(xmin=0,xmax=5,ymin=0,ymax=5),fill=NA)+facet_grid(row~col)+geom_text(aes(x=1,y=4,label=mean.normred))+geom_text(aes(x=4,y=1,label=median.normred))+presentation+theme(axis.ticks.x=element_blank(), axis.ticks.y=element_blank(), axis.text.x=element_blank(), axis.text.y=element_blank())+xlab("columns")+ylab("rows")+labs(title=paste0("Score p",score.plate[[i]]," Red Fluorescence"))
+            plot.score.red<-ggplot(proc)+geom_rect(aes(xmin=0,xmax=5,ymin=0,ymax=5),fill=NA)+facet_grid(row~col)+geom_text(aes(x=1,y=4,label=mean.norm.red))+geom_text(aes(x=4,y=1,label=median.norm.red))+presentation+theme(axis.ticks.x=element_blank(), axis.ticks.y=element_blank(), axis.text.x=element_blank(), axis.text.y=element_blank())+xlab("columns")+ylab("rows")+labs(title=paste0("Score p",score.plate[[i]]," Red Fluorescence"))
             saveRDS(plot.score.red,file=file.path(dir.existing,"temp","plot-score-red.rds"))
             
-            plot.score.tofext<-ggplot(proc)+geom_rect(fill=NA,aes(xmin=0,xmax=5,ymin=0,ymax=5))+facet_grid(row~col)+geom_text(aes(x=1,y=4,label=meanTOF))+geom_text(aes(x=4,y=4,label=meanEXT))+geom_text(aes(x=1,y=1,label=medianTOF))+geom_text(aes(x=4,y=1,label=medianEXT))+presentation+theme(axis.ticks.x=element_blank(), axis.ticks.y=element_blank(), axis.text.x=element_blank(), axis.text.y=element_blank())+xlab("columns")+ylab("rows")+labs(title=paste0("Score p",score.plate[[i]]," TOF/EXT"))
+            plot.score.tofext<-ggplot(proc)+geom_rect(fill=NA,aes(xmin=0,xmax=5,ymin=0,ymax=5))+facet_grid(row~col)+geom_text(aes(x=1,y=4,label=mean.TOF))+geom_text(aes(x=4,y=4,label=mean.EXT))+geom_text(aes(x=1,y=1,label=median.TOF))+geom_text(aes(x=4,y=1,label=median.EXT))+presentation+theme(axis.ticks.x=element_blank(), axis.ticks.y=element_blank(), axis.text.x=element_blank(), axis.text.y=element_blank())+xlab("columns")+ylab("rows")+labs(title=paste0("Score p",score.plate[[i]]," TOF/EXT"))
             saveRDS(plot.score.tofext,file=file.path(dir.existing,"temp","plot-score-tofext.rds"))
             
             melted.proc<-melted.score.pheno[[i]]
@@ -429,12 +422,11 @@ for(dir in seq(1,length(dataDirs))){
             means <- list()
             length(means) = ncol(data)
             plates <- data[data$plate %in% controls,]
-            colMeans = function(x){return(as.data.frame(do.call(cbind, lapply(x[,10:length(x)], function(y){mean(y, na.rm = TRUE)}))))}
             meanPlate = plates %>% group_by(row, col) %>% do(data.frame(means = colMeans(.)))
             controlPlate = as.data.frame(cbind(data.frame(matrix(nrow=96, ncol=7)), meanPlate))
             
             for(j in controlPlates[[i]]){
-                controlData[[j]] = data.frame(matrix(nrow=96, ncol=59))
+                controlData[[j]] = data.frame(matrix(nrow=96, ncol=118))
                 colnames(controlData[[j]]) = columnNames
             }
             for(j in testPlates[[i]]){
@@ -444,7 +436,7 @@ for(dir in seq(1,length(dataDirs))){
         }
         for(i in 1:length(unique(data$plate))){
             if(is.null(controlData[[i]])){
-                controlData[[i]] = data.frame(matrix(nrow=96, ncol=59))
+                controlData[[i]] = data.frame(matrix(nrow=96, ncol=118))
                 colnames(controlData[[i]]) = columnNames
             }
         }
