@@ -412,7 +412,7 @@ for(dir in seq(1,length(dataDirs))){
     
     controlDFs <- list()
     controlData = list()
-    length(controlData) = length(data)
+    length(controlData) = length(unique(data$plate))
     
     assay = unique(data$assay)
     
@@ -422,11 +422,12 @@ for(dir in seq(1,length(dataDirs))){
             means <- list()
             length(means) = ncol(data)
             plates <- data[data$plate %in% controls,]
-            meanPlate = plates %>% group_by(row, col) %>% do(data.frame(means = colMeans(.)))
-            controlPlate = as.data.frame(cbind(data.frame(matrix(nrow=96, ncol=7)), meanPlate))
+            meanPlate = plates %>% group_by(row, col) %>% do(data.frame(means = colMeans(.[10:ncol(.)], na.rm = TRUE)))
+            meanPlate = as.data.frame(matrix(meanPlate$means, ncol=ncol(plates)-9, byrow=TRUE))
+            controlPlate = as.data.frame(cbind(data.frame(matrix(nrow=96, ncol=9)), meanPlate))
             
             for(j in controlPlates[[i]]){
-                controlData[[j]] = data.frame(matrix(nrow=96, ncol=118))
+                controlData[[j]] = data.frame(matrix(nrow=96, ncol=ncol(data)))
                 colnames(controlData[[j]]) = columnNames
             }
             for(j in testPlates[[i]]){
@@ -436,7 +437,7 @@ for(dir in seq(1,length(dataDirs))){
         }
         for(i in 1:length(unique(data$plate))){
             if(is.null(controlData[[i]])){
-                controlData[[i]] = data.frame(matrix(nrow=96, ncol=118))
+                controlData[[i]] = data.frame(matrix(nrow=96, ncol=ncol(data)))
                 colnames(controlData[[i]]) = columnNames
             }
         }
