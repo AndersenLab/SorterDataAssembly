@@ -289,3 +289,21 @@ readPlate_worms <- function(file, tofmin=0, tofmax=10000, extmin=0, extmax=10000
                                            ifelse(modplate$TOF>=300, "adult", NA))))
     return(modplate)
 }
+
+removeWells <- function(plate, badWells, drop=FALSE) {
+    sp.bw <- str_split(badWells, "", 3)
+    if(!drop){
+        for (i in seq(1, length(sp.bw))) {
+            row <- sp.bw[[i]][2]
+            col <- sp.bw[[i]][3]
+            plate[which(plate$row == row & plate$col == col),10:ncol(plate)] <- NA
+        }
+    } else {
+        for (i in seq(1, length(sp.bw))) {
+            row <- sp.bw[[i]][2]
+            col <- sp.bw[[i]][3]
+            plate = plate[plate$row != row & plate$col != col,]
+        }
+    }
+    return(plate)
+}

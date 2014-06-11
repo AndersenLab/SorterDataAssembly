@@ -267,11 +267,6 @@ for(dir in seq(1,length(dataDirs))){
         i = i+1
     }
     
-    #score.proc is list of totally processed score files
-    for (i in 1:length(score.pheno)) {
-        score.pheno[[i]] <- removeWells(score.pheno[[i]], bad[[i]])
-    }
-    
     date=Sys.Date()
     date=as.character(format(date,format="%Y%m%d"))
     
@@ -281,6 +276,11 @@ for(dir in seq(1,length(dataDirs))){
     score.info <- llply(file.path(dir.data,score.filelist), function(x){info(x)})
     for(i in 1:length(score.pheno)){
         score.pheno[[i]] = as.data.frame(cbind(score.info[[i]],score.pheno[[i]]))
+    }
+    
+    #score.proc is list of totally processed score files
+    for (i in 1:length(score.pheno)) {
+        score.pheno[[i]] <- removeWells(score.pheno[[i]], bad[[i]])
     }
     
     #Print out final reports and assemble final data frames
@@ -391,7 +391,7 @@ completeDF <- completeDF[,2:ncol(completeDF)]
 # Remove infinite values from taking log of columns with 0 as value
 completeDF <- data.frame(lapply(completeDF, function(x) replace(x, is.infinite(x),NA)))
 
-startCol <- 10 
+startCol <- which(colnames(completeDF)=="n")
 
 assays <- dlply(completeDF, .variables = "assay")
 
