@@ -470,8 +470,7 @@ for(i in unique(plateData$drug)){
     control = controlsData[plateData$drug == i,]
     for(j in startCol:ncol(plate)){
         residuals = tryCatch({residuals(lm(plate[,j]~plate$assay+control[,j], na.action = na.exclude))},
-                             error = function(err){tryCatch({residuals(lm(plate[,j]~control[,j], na.action = na.exclude))},
-                                                            error = function(err){return(rep(NA, nrow(plate)))})})
+                             error = function(err){return(rep(NA, nrow(plate)))})
         plate = as.data.frame(cbind(plate, residuals))
         colnames(plate)[ncol(plate)] = paste0("resid.", colnames(plate)[j])
     }
