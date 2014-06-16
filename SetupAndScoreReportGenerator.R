@@ -237,6 +237,11 @@ for(dir in seq(1,length(dataDirs))){
         norm<-score$n/setup$sorted
         norm<-ifelse(is.infinite(norm),NA,norm)
         score$norm.n<-norm
+        for(row in 1:nrow(score)){
+            if(score$mean.TOF[row]==-1){
+                score[row, which(colnames(score)=="n"):ncol(score)] <- NA
+            }
+        }
         score.pheno[[i]]<-score
     }
     
@@ -451,6 +456,8 @@ plateData = data.frame(do.call(rbind, plateData))
 controlsData = data.frame(do.call(rbind, controlsData))
 
 plateData[is.na(plateData$strain), 10:ncol(plateData)] = NA
+controlsData$row = rep(LETTERS[1:8], each=12)
+controlsData$col = rep(1:12)
 controlsData[controlsData$col %% 2 == 0 | is.na(controlsData$col), 10:ncol(controlsData)] = NA
 
 #important to make sure that the plate data matches the order of the control data
