@@ -186,12 +186,12 @@ summarizePlate_worms <- function(plate, strains=NULL, quantiles=FALSE, log=FALSE
         analysis <- analysis[order(analysis$strain),]
         analysis <- analysis[order(analysis$row, analysis$col),]
     }
-    analysis[which(analysis$mean.TOF==-1) | which(is.na(analysis$mean.TOF)),which(colnames(analysis)=="n"):ncol(analysis)] <- NA
+    analysis[analysis$mean.TOF==-1 | is.na(analysis$mean.TOF),which(colnames(analysis)=="n"):ncol(analysis)] <- NA
     return(analysis)
 }
 
 
-readPlate_worms <- function(file, tofmin=0, tofmax=10000, extmin=0, extmax=10000, SVM=TRUE) {
+readPlate_worms <- function(file, tofmin=60, tofmax=2000, extmin=0, extmax=10000, SVM=TRUE) {
     plate <- readSorter(file, tofmin, tofmax, extmin, extmax)
     modplate <- with(plate, data.frame(row=Row, col=as.factor(Column), sort=Status.sort, TOF=TOF, EXT=EXT, time=Time.Stamp, green=Green, yellow=Yellow, red=Red))
     modplate <- modplate %>% group_by(row, col) %>% do(extractTime(.))
