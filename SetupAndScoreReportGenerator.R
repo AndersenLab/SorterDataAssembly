@@ -238,7 +238,7 @@ for(dir in seq(1,length(dataDirs))){
         norm<-ifelse(is.infinite(norm),NA,norm)
         score$norm.n<-norm
         for(row in 1:nrow(score)){
-            if(score$mean.TOF[row]==-1){
+            if(is.na(score$mean.TOF[row]) | score$mean.TOF[row]==-1){
                 score[row, which(colnames(score)=="n"):ncol(score)] <- NA
             }
         }
