@@ -42,21 +42,34 @@ regress <- function(data, completeData, controls){
     plates <- data[!duplicated(data[,c("assay", "plate", "drug")]), c("assay", "plate", "drug")]
     controlValues <- plates %>%
         group_by(assay, plate, drug) %>%
-        do(data.frame(filter(completeData,
+        do(tryCatch({data.frame(filter(completeData,
                                        assay==as.character(.$assay[1]),
-                                       as.numeric(plate) %in% as.numeric(controls[sapply(controls$plates,
-                                                                                         function(x){as.numeric(.$plate[1]) %in% as.numeric(x)}), "control"])) %>%
+                                       as.numeric(plate) %in% as.numeric(unlist(controls[sapply(controls$plates,
+                                                                                         function(x){as.numeric(.$plate[1]) %in% as.numeric(x)}) & controls$assay==.$assay[1], "control"])))) %>%
                                     group_by(row, col) %>%
-                                    summarise_each(funs(mean(., na.rm=TRUE)), -date, -experiment, -round, -assay, -plate, -drug))},
+                                    summarise_each(funs(mean(., na.rm=TRUE)), -date, -experiment, -round, -assay, -plate, -drug)},
                     error = function(err){return(data.frame(matrix(nrow=96)))}))
     
-    regressedValues <- lapply(which(colnames(data)=="n"):ncol(data),
-                              function(x){
-                                  tryCatch({residuals(lm(data[,x] ~ data$assay + controlValues[,which(colnames(controlValues)==colnames(data)[x])], na.action=na.exclude))},
-                                           error = function(err){return(NA)})
-                              })
+    regressedValues <- data.frame(do.call(cbind, lapply(which(colnames(data)=="n"):ncol(data),
+                                             function(x){
+                                                 tryCatch({residuals(lm(data[,x] ~ data$assay + controlValues[,which(colnames(controlValues)==colnames(data)[x])], na.action=na.exclude))},
+                                                          error = function(err){return(NA)})
+                                             })))
+
+    
+    reactValues <- data.frame(do.call(cbind, lapply(which(colnames(data)=="n"):ncol(data),
+                                         function(x){
+                                             reactNorms <- data[,x] - controlValues[,which(colnames(controlValues)==colnames(data)[x])]
+                                             if(length(reactNorms)==0){
+                                                 reactNorms <- NA
+                                             }
+                                             return(reactNorms)
+                                         })))
+
     finalDF <- data.frame(data, regressedValues)
     colnames(finalDF)[(which(colnames(finalDF)=="norm.n")+1):ncol(finalDF)] <- paste0("resid.", colnames(finalDF)[which(colnames(finalDF)=="n"):which(colnames(finalDF)=="norm.n")])
+    finalDF <- data.frame(finalDF, reactValues)
+    colnames(finalDF)[(which(colnames(finalDF)=="resid.norm.n")+1):ncol(finalDF)] <- paste0("react.", colnames(finalDF)[which(colnames(finalDF)=="n"):which(colnames(finalDF)=="norm.n")])
     return(finalDF)
 }
 
@@ -75,6 +88,19 @@ directories <- c("~/Dropbox/HTA/Results/20110811_RIAILs0a", "~/Dropbox/HTA/Resul
 directories <- c("~/Dropbox/HTA/Results/20140616_GWAS8a", "~/Dropbox/HTA/Results/20140617_GWAS8b")
 
 directories <- c("~/Dropbox/HTA/Results/20140609_GWAS7a", "~/Dropbox/HTA/Results/20140610_GWAS7b")
+
+directories <- c("~/Dropbox/HTA/Results/20140421_GWAS6a", "~/Dropbox/HTA/Results/20140422_GWAS6b")
+
+directories <- c("~/Dropbox/HTA/Results/20140414_GWAS5a", "~/Dropbox/HTA/Results/20140415_GWAS5b")
+
+directories <- c("~/Dropbox/HTA/Results/20140407_GWAS4a", "~/Dropbox/HTA/Results/20140408_GWAS4b")
+
+directories <- c("~/Dropbox/HTA/Results/20140331_GWAS3a", "~/Dropbox/HTA/Results/20140401_GWAS3b")
+
+directories <- c("~/Dropbox/HTA/Results/20140324_GWAS2a", "~/Dropbox/HTA/Results/20140325_GWAS2b")
+
+directories <- c("~/Dropbox/HTA/Results/20140317_GWAS1a", "~/Dropbox/HTA/Results/20140318_GWAS1b")
+
 
 # Get the setup list vector
 setupList <- sapply(unlist(sapply(directories,
@@ -136,7 +162,7 @@ contamFiles <- sapply(unlist(sapply(directories,
                                         })), as.character)
 
 contamination <- do.call(rbind, lapply(contamFiles, function(x){data.frame(cbind(assay=info(x)$assay,
-                                                      read.delim(x, sep="<", quote="\'", header=FALSE)))}))
+                                                      read.delim(x, sep="<", quote=NULL, header=FALSE)))}))
 colnames(contamination) <- c("assay", "plate", "contam")
 
 contamination$plate <- sapply(contamination$plate, function(x){as.numeric(strsplit(as.character(x), "p")[[1]][2])})
@@ -158,11 +184,34 @@ controls <- do.call(rbind, lapply(lapply(directories, function(x){list.files(x, 
                                       data.frame(assay, control=I(controlPlates), plates=I(testPlates))
                                   }))
 
-finalData <- completeData %>% group_by(drug) %>% do(regress(., completeData, controls)) %>% arrange(assay)
+finalData <- completeData %>% group_by(drug) %>% do(regress(., completeData, controls))# %>% arrange(assay)
+
+
+
+
+
+for(i in unique(completeData$drug)){
+    print(i)
+    data = completeData[completeData$drug==i,]
+    print(nrow(regress(data, completeData, controls)))
+}
+
+
+
+
+
+
 
 write.csv(finalData, "~/Dropbox/HTA/Results/ProcessedData/GWAS7_complete_simple.csv")
 
+write.csv(finalData, "~/Dropbox/HTA/Results/ProcessedData/GWAS6_complete_simple.csv")
 
-# write.csv(summarizedData, "RIAILs0_raw2.csv")
+write.csv(finalData, "~/Dropbox/HTA/Results/ProcessedData/GWAS5_complete_simple.csv")
 
-tester123 <- completeData %>% filter(assay=="a", drug=="control-lysate") %>% summarise_each(funs(mean(., na.rm=TRUE)))
+write.csv(finalData, "~/Dropbox/HTA/Results/ProcessedData/GWAS4_complete_simple.csv")
+
+write.csv(finalData, "~/Dropbox/HTA/Results/ProcessedData/GWAS3_complete_simple.csv")
+
+write.csv(finalData, "~/Dropbox/HTA/Results/ProcessedData/GWAS2_complete_simple.csv")
+
+write.csv(finalData, "~/Dropbox/HTA/Results/ProcessedData/GWAS1_complete_simple.csv")
