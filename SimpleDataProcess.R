@@ -108,7 +108,7 @@ contamination$contam <- I(sapply(contamination$contam, function(x){eval(parse(te
 #Remove contamination
 completeData <- completeData %>% group_by(assay, plate) %>% do(removeWells(., unlist(contamination[contamination$assay==.$assay[1] & contamination$plate==as.numeric(.$plate[1]),3])))
 
-#NA out wash wells, change if patterning is different than for mapping
+#NA out wash wells
 completeData[is.na(completeData$strain), which(colnames(completeData)=="n"):ncol(completeData)] <- NA
 
 #NA out any wells where norm.n is infinite (i.e. nothing sorted to well)
