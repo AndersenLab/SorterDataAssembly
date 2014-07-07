@@ -20,12 +20,13 @@ if answer == "y" or answer == "yes":
 else:
     generateReports = "FALSE"
 
-for i in range(0, len(dirList)):
-    dirList[i] = relpath(dirList[i], expanduser("~"))
+# Uncomment if running old version of assembly code
+# for i in range(0, len(dirList)):
+#     dirList[i] = relpath(dirList[i], expanduser("~"))
 
 directories = " ".join(dirList)
 
-command = " ".join(["Rscript SetupAndScoreReportGenerator.R", generateReports,
+command = " ".join(["Rscript SimpleDataProcess.R", generateReports,
                     directories])
 
 subprocess.call(command, shell=True)
