@@ -1,17 +1,15 @@
-require(COPASutils)
-
-
+library(COPASutils)
+library(dplyr)
+library(kernlab)
 
 source("~/SorterDataAssembly/SimpleDataProcessFxns.R")
-generateReports=TRUE
+generateReports=FALSE
 
 options(echo=TRUE)
 
 args <- commandArgs(trailingOnly = TRUE)
 generateReports <- as.logical(args[1])
 directories <- args[2:length(args)]
-
-print(directories)
 
 # Set all experiment directories
 # directories <- c("~/Dropbox/HTA/Results/20110811_RIAILs0a", "~/Dropbox/HTA/Results/20110812_RIAILs0b", "~/Dropbox/HTA/Results/20110818_RIAILs0c", "~/Dropbox/HTA/Results/20110819_RIAILs0d")
@@ -31,7 +29,7 @@ print(directories)
 # directories <- c("~/Dropbox/HTA/Results/20140324_GWAS2a", "~/Dropbox/HTA/Results/20140325_GWAS2b")
 # 
 # directories <- c("~/Dropbox/HTA/Results/20140317_GWAS1a", "~/Dropbox/HTA/Results/20140318_GWAS1b")
-
+# directories=c("/Users/tyler/Dropbox/HTA/Results/20140630_RIAILs2a", "/Users/tyler/Dropbox/HTA/Results/20140701_RIAILs2b", "/Users/tyler/Dropbox/HTA/Results/20140707_RIAILs2c", "/Users/tyler/Dropbox/HTA/Results/20140708_RIAILs2d")
 
 sapply(directories, function(x){dir.create(file.path(x, "reports"), showWarnings = FALSE)})
 
@@ -106,7 +104,7 @@ contamination$plate <- sapply(contamination$plate, function(x){as.numeric(strspl
 contamination$contam <- I(sapply(contamination$contam, function(x){eval(parse(text=gsub("- ", "", as.character(x))))}))
 
 #Remove contamination
-completeData <- completeData %>% group_by(assay, plate) %>% do(removeWells(., unlist(contamination[contamination$assay==.$assay[1] & contamination$plate==as.numeric(.$plate[1]),3])))
+completeData <- completeData %>% group_by(assay, plate) %>% do(removeWells(., unlist(contamination[as.character(contamination$assay)==.$assay[1] & as.numeric(as.character(contamination$plate))==as.numeric(.$plate[1]),3])))
 
 #NA out wash wells
 completeData[is.na(completeData$strain), which(colnames(completeData)=="n"):ncol(completeData)] <- NA
