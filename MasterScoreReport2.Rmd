@@ -1,0 +1,111 @@
+```{r echo=FALSE, warning=FALSE}
+date=Sys.Date()
+date=as.character(format(date,format="%Y%m%d"))
+plate=df$plate[1]
+condition=df$drug[1]
+```
+
+SCORE Report: `r date` - Plate `r plate` `r condition`
+========================================================
+
+Strain information:
+```{r echo = FALSE, warning=FALSE}
+options(width = 110)
+strains=df$strain
+```
+
+
+Contaminated wells:
+```{r echo=FALSE, warning=FALSE}
+unlist(contamination[as.character(contamination$assay)==as.character(df$assay[1]) & as.numeric(contamination$plate)==as.numeric(df$plate[1]), "contam"])
+```
+
+
+Possibly contaminated wells:
+```{r echo=FALSE, warning=FALSE}
+possContam(df)
+```
+
+
+NA Count:
+```{r echo=FALSE, warning=FALSE}
+nrow(df[as.numeric(as.numeric(df$col)) %% 2 == 1 & is.na(df$n),])
+```
+
+
+NA Strains:
+```{r echo=FALSE, warning=FALSE}
+df[as.numeric(as.numeric(df$col)) %% 2 == 1 & is.na(df$n),"strain"]
+```
+
+
+Number of worms in each well:
+```{r echo=FALSE,fig.width=15,fig.height=10, warning=FALSE}
+ggplot(df) +
+    geom_rect(aes(xmin=0,xmax=5,ymin=0,ymax=5,fill=ifelse(is.na(norm.n)|is.infinite(norm.n), NA, as.numeric(n)))) +
+    facet_grid(row~col) +
+    geom_text(aes(x=2.5,y=2.5,label=ifelse(is.na(norm.n), "NA", round(as.numeric(n), 2))),colour="white") +
+    presentation+theme(axis.ticks.x=element_blank(), axis.ticks.y=element_blank(), axis.text.x=element_blank(), axis.text.y=element_blank()) +
+    xlab("columns") +
+    ylab("rows") +
+    labs(title=paste0("Score p",df$plate[1]," Population"))
+```
+
+
+
++ Top left: Mean TOF
++ Top right: Mean EXT
++ Bottom left: Median TOF
++ Bottom right: Median EXT
+```{r echo=FALSE,fig.width=15,fig.height=10, warning=FALSE}
+ggplot(df) +
+    geom_rect(fill=NA,aes(xmin=0,xmax=5,ymin=0,ymax=5))+facet_grid(row~col) +
+    geom_text(aes(x=1,y=4,label=ifelse(is.na(mean.TOF), "NA", round(mean.TOF, 0)))) +
+    geom_text(aes(x=4,y=4,label=ifelse(is.na(mean.EXT), "NA", round(mean.EXT, 0)))) +
+    geom_text(aes(x=1,y=1,label=ifelse(is.na(median.TOF), "NA", round(median.TOF, 0)))) +
+    geom_text(aes(x=4,y=1,label=ifelse(is.na(median.EXT), "NA", round(mean.EXT, 0)))) +
+    presentation +
+    theme(axis.ticks.x=element_blank(), axis.ticks.y=element_blank(), axis.text.x=element_blank(), axis.text.y=element_blank()) +
+    xlab("columns") +
+    ylab("rows") +
+    labs(title=paste0("Score p",df$plate[1]," TOF/EXT"))
+```
+
+
+
+Red fluorescence (normalized by mean TOF):
++ Top left: Mean red
++ Bottom right: Median red
+```{r echo=FALSE,fig.width=15,fig.height=10, warning=FALSE}
+ggplot(df) +
+    geom_rect(aes(xmin=0,xmax=5,ymin=0,ymax=5),fill=NA) +
+    facet_grid(row~col) +
+    geom_text(aes(x=1,y=4,label=ifelse(is.na(mean.norm.red), "NA", round(mean.norm.red, 2)))) +
+    geom_text(aes(x=4,y=1,label=ifelse(is.na(median.norm.red), "NA", round(median.norm.red, 2)))) +
+    presentation +
+    theme(axis.ticks.x=element_blank(), axis.ticks.y=element_blank(), axis.text.x=element_blank(), axis.text.y=element_blank()) +
+    xlab("columns") +
+    ylab("rows") +
+    labs(title=paste0("Score p",df$plate[1]," Red Fluorescence"))
+```
+
+
+
+Life-stage distribution:
+```{r echo=FALSE, warning=FALSE}
+ggplot(melted.proc,aes(as.factor(col),value,fill=variable))+
+    geom_bar(aes(x=3),stat="identity",position="stack") +
+    facet_grid(row~col) +
+    presentation +
+    theme(axis.ticks.x=element_blank(), axis.ticks.y=element_blank(), axis.text.x=element_blank(), axis.text.y=element_blank()) +
+    xlab("columns") +
+    ylab("rows") +
+    labs(title=paste0("Score p",df$plate[1]," Life-stage Distribution"))
+```
+
+
+
+Processed dataset:
+```{r echo=FALSE, warning=FALSE}
+df
+```

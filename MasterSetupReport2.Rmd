@@ -1,0 +1,62 @@
+```{r echo=FALSE, warning=FALSE}
+date=Sys.Date()
+date=as.character(format(date,format="%Y%m%d"))
+plate=df$plate[1]
+condition=df$drug[1]
+```
+
+SETUP Report: `r date` - Plate `r plate` `r condition`
+========================================================
+
+
+Number of L4s sorted:
+```{r echo=FALSE,fig.width=15,fig.height=10, warning=FALSE}
+ggplot(df)+geom_rect(aes(xmin=0,xmax=5,ymin=0,ymax=5,fill=n.sorted))+
+        scale_fill_gradient2(high = "green", low = "red", mid = "yellow", midpoint = ceiling((max(df$n.sorted)-min(df$n.sorted))/2))+
+        facet_grid(row~col) +
+        geom_text(aes(x=2.5,y=2.5,label=n.sorted)) +
+        presentation +
+        theme(axis.ticks.x=element_blank(), axis.ticks.y=element_blank(), axis.text.x=element_blank(), axis.text.y=element_blank())+
+        xlab("columns") +
+        ylab("rows") +
+        labs(title=paste0("Setup p",df$plate[1]," # Sorted"))
+```
+
+
+
+Population size (factored color):
+```{r echo=FALSE,fig.width=15,fig.height=10, warning=FALSE}
+ggplot(df)+geom_rect(aes(xmin=0,xmax=5,ymin=0,ymax=5,fill=bin))+
+        scale_fill_manual(values = c("low" = "white", "low-mid" = "green", "high-mid" = "yellow", "high" = "red"))+
+        facet_grid(row~col)+geom_text(aes(x=2.5,y=2.5,label=n))+
+        presentation+
+        theme(axis.ticks.x=element_blank(), axis.ticks.y=element_blank(), axis.text.x=element_blank(), axis.text.y=element_blank())+
+        xlab("columns") +
+        ylab("rows") +
+        labs(title=paste0("Setup p",df$plate[1]," Population"))
+```
+
+
+- Top left: TOF mean
+- Bottom left: TOF median
+- Top right: EXT mean
+- Bottom right: EXT median
+```{r echo=FALSE,fig.width=15,fig.height=10, warning=FALSE}
+ggplot(df) +
+        geom_rect(fill=NA,aes(xmin=0,xmax=5,ymin=0,ymax=5)) +
+        facet_grid(row~col)+geom_text(aes(x=1,y=4,label=round(mean.TOF,0))) +
+        geom_text(aes(x=4,y=4,label=round(mean.EXT,0))) +
+        geom_text(aes(x=1,y=1,label=round(median.TOF,0))) +
+        geom_text(aes(x=4,y=1,label=round(median.EXT,0))) +
+        presentation +
+        theme(axis.ticks.x=element_blank(), axis.ticks.y=element_blank(), axis.text.x=element_blank(), axis.text.y=element_blank()) +
+        xlab("columns") +
+        ylab("rows") +
+        labs(title="Setup p",df$plate[1]," TOF/EXT")
+```
+
+
+Setup dataset:
+```{r echo=FALSE, warning=FALSE}
+df
+```
