@@ -3,47 +3,27 @@ library(dplyr)
 library(kernlab)
 library(knitr)
 
+# Source all of the necessary functions
 source("~/SorterDataAssembly/SimpleDataProcessFxns.R")
-generateReports=FALSE
 
+# If echo = TRUE, code will be visible when run from ExperimentRunner.py
 options(echo=TRUE)
 
+# Get the command line arguments for the boolean to generate reports and the string list of directories
 args <- commandArgs(trailingOnly = TRUE)
 generateReports <- as.logical(args[1])
 directories <- args[2:length(args)]
 
-# Set all experiment directories
-#directories <- c("~/Dropbox/HTA/Results/20110811_RIAILs0a", "~/Dropbox/HTA/Results/20110812_RIAILs0b", "~/Dropbox/HTA/Results/20110818_RIAILs0c", "~/Dropbox/HTA/Results/20110819_RIAILs0d")
-# 
-# directories <- c("~/Dropbox/HTA/Results/20140616_GWAS8a", "~/Dropbox/HTA/Results/20140617_GWAS8b")
-# 
-# directories <- c("~/Dropbox/HTA/Results/20140609_GWAS7a", "~/Dropbox/HTA/Results/20140610_GWAS7b")
-# 
-# directories <- c("~/Dropbox/HTA/Results/20140421_GWAS6a", "~/Dropbox/HTA/Results/20140422_GWAS6b")
-# 
-# directories <- c("~/Dropbox/HTA/Results/20140414_GWAS5a", "~/Dropbox/HTA/Results/20140415_GWAS5b")
-# 
-# directories <- c("~/Dropbox/HTA/Results/20140407_GWAS4a", "~/Dropbox/HTA/Results/20140408_GWAS4b")
-# 
-# directories <- c("~/Dropbox/HTA/Results/20140331_GWAS3a", "~/Dropbox/HTA/Results/20140401_GWAS3b")
-# 
-# directories <- c("~/Dropbox/HTA/Results/20140324_GWAS2a", "~/Dropbox/HTA/Results/20140325_GWAS2b")
-# 
-# directories <- c("~/Dropbox/HTA/Results/20140317_GWAS1a", "~/Dropbox/HTA/Results/20140318_GWAS1b")
-
-# directories <- c("~/Dropbox/HTA/Results/20140429_RIAILs1b") 
-
-# directories=c("/Users/tyler/Dropbox/HTA/Results/20140630_RIAILs2a", "/Users/tyler/Dropbox/HTA/Results/20140701_RIAILs2b", "/Users/tyler/Dropbox/HTA/Results/20140707_RIAILs2c", "/Users/tyler/Dropbox/HTA/Results/20140708_RIAILs2d")
-
+# Create "reports" directories within each experimental directory
 sapply(directories, function(x){dir.create(file.path(x, "reports"), showWarnings = FALSE)})
 
-# Get the setup list vector
+# Get the list of all setup files
 setupList <- sapply(unlist(sapply(directories,
                     function(x){lapply(list.files(x, pattern="\\.txt", recursive=TRUE, full.names=TRUE),
                                        function(y){if(!grepl("IncompleteData",y) & !grepl("UnstitchedData",y) & !grepl("Archive",y) & grepl("setup",y)){return(y)}})})
                           ), as.character)
 
-# Get the score list vector
+# Get the list of all score files
 scoreList <- sapply(unlist(sapply(directories,
                    function(x){lapply(list.files(x, pattern="\\.txt", recursive=TRUE, full.names=TRUE),
                                       function(y){if(!grepl("IncompleteData",y) & !grepl("UnstitchedData",y) & !grepl("Archive",y) & grepl("score",y)){return(y)}})})
@@ -52,6 +32,7 @@ scoreList <- sapply(unlist(sapply(directories,
 # Read in all setup plates
 sortData <- do.call(rbind, lapply(setupList, function(x){data.frame(cbind(info(x,2), procSetup(x, 60, 2000), step="setup"))}))
 
+# If you want to generate the reports
 if(generateReports){
     sortData %>% group_by(assay, plate) %>% do(data.frame(setupReport(.)))
 }
