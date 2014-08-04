@@ -1,6 +1,7 @@
 library(COPASutils)
 library(plyr)
 library(dplyr)
+library(kernlab)
 
 source("~/SorterDataAssembly/SimpleDataProcessFxns.R")
 
@@ -130,7 +131,7 @@ summarizedScoreData <- rawScoreData %>%
 completeData <- left_join(summarizedScoreData, select(sortData, assay, plate, row, col, n.sorted.setup = n.sorted)) %>% mutate(norm.n=n/n.sorted.setup) %>% select(-contains("sort"))
 
 #NA out wash wells
-completeData[is.na(completeData$strain), which(colnames(completeData)=="n"):ncol(completeData)] <- NA
+completeData[is.na(completeData$strain) | is.na(completeData$norm.n), which(colnames(completeData)=="n"):ncol(completeData)] <- NA
 
 controls <- data.frame()
 
