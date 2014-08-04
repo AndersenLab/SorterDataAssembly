@@ -1,6 +1,7 @@
 library(COPASutils)
 library(dplyr)
 library(kernlab)
+library(knitr)
 
 source("~/SorterDataAssembly/SimpleDataProcessFxns.R")
 generateReports=FALSE
@@ -12,7 +13,7 @@ generateReports <- as.logical(args[1])
 directories <- args[2:length(args)]
 
 # Set all experiment directories
-# directories <- c("~/Dropbox/HTA/Results/20110811_RIAILs0a", "~/Dropbox/HTA/Results/20110812_RIAILs0b", "~/Dropbox/HTA/Results/20110818_RIAILs0c", "~/Dropbox/HTA/Results/20110819_RIAILs0d")
+#directories <- c("~/Dropbox/HTA/Results/20110811_RIAILs0a", "~/Dropbox/HTA/Results/20110812_RIAILs0b", "~/Dropbox/HTA/Results/20110818_RIAILs0c", "~/Dropbox/HTA/Results/20110819_RIAILs0d")
 # 
 # directories <- c("~/Dropbox/HTA/Results/20140616_GWAS8a", "~/Dropbox/HTA/Results/20140617_GWAS8b")
 # 
@@ -29,6 +30,9 @@ directories <- args[2:length(args)]
 # directories <- c("~/Dropbox/HTA/Results/20140324_GWAS2a", "~/Dropbox/HTA/Results/20140325_GWAS2b")
 # 
 # directories <- c("~/Dropbox/HTA/Results/20140317_GWAS1a", "~/Dropbox/HTA/Results/20140318_GWAS1b")
+
+# directories <- c("~/Dropbox/HTA/Results/20140429_RIAILs1b") 
+
 # directories=c("/Users/tyler/Dropbox/HTA/Results/20140630_RIAILs2a", "/Users/tyler/Dropbox/HTA/Results/20140701_RIAILs2b", "/Users/tyler/Dropbox/HTA/Results/20140707_RIAILs2c", "/Users/tyler/Dropbox/HTA/Results/20140708_RIAILs2d")
 
 sapply(directories, function(x){dir.create(file.path(x, "reports"), showWarnings = FALSE)})
@@ -110,7 +114,7 @@ completeData <- completeData %>% group_by(assay, plate) %>% do(removeWells(., un
 completeData[is.na(completeData$strain), which(colnames(completeData)=="n"):ncol(completeData)] <- NA
 
 #NA out any wells where norm.n is infinite (i.e. nothing sorted to well)
-completeData[is.infinite(completeData$norm.n), which(colnames(completeData)=="n"):ncol(completeData)] <- NA
+completeData[is.infinite(completeData$norm.n) | is.na(completeData$norm.n), which(colnames(completeData)=="n"):ncol(completeData)] <- NA
 
 if(generateReports){
     completeData %>% group_by(assay, plate) %>% do(data.frame(scoreReport(., contamination)))
@@ -128,4 +132,4 @@ finalData <- completeData %>% group_by(drug) %>% do(regress(., completeData, con
 experiment <- info(directories[1], levels=0)$experiment
 round <- info(directories[1], levels=0)$round
 
-write.csv(finalData, paste0("~/Dropbox/HTA/Results/ProcessedData/", experiment, round, "_complete_simple.csv"))
+write.csv(finalData, paste0("~/Dropbox/HTA/Results/ProcessedData/", experiment, round, "_complete_simple.csv"), row.names=FALSE)
