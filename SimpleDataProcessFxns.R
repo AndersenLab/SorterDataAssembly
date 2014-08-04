@@ -1,4 +1,3 @@
-# Extract the metadata info
 info <- function(filePath, levels = 1){
     splitfp <- strsplit(filePath,"/")
     dirName <- splitfp[[1]][(length(splitfp[[1]])-levels)]
@@ -75,21 +74,17 @@ regress <- function(data, completeData, controls){
 possContam <- function(procDataFrame){
     strainMean <- mean(procDataFrame$n[!is.na(procDataFrame$strain)], na.rm = TRUE)
     strainSD <- sd(procDataFrame$n[!is.na(procDataFrame$strain)], na.rm = TRUE)
-    washMean <- mean(procDataFrame$n[is.na(procDataFrame$strain)], na.rm = TRUE)
-    washSD <- sd(procDataFrame$n[is.na(procDataFrame$strain)], na.rm = TRUE)
     possibleContam <- c()
     for(j in seq(1,nrow(procDataFrame),)){
         if(!is.na(as.character(procDataFrame[j,"strain"])) & !is.na(procDataFrame[j,"n"])){
-            if(procDataFrame[j,"n"] > strainMean + (2*strainSD)){
+            if(procDataFrame[j,"n"] > strainMean + (3*strainSD)){
                 row <- as.character(procDataFrame[j, "row"])
                 col <- as.numeric(procDataFrame[j, "col"])
-                adjacentWash <- procDataFrame[procDataFrame$row==row & procDataFrame$col==(col+1),"n"]
-                if(adjacentWash > washMean + (2*washSD)){
-                    possibleContam <- append(possibleContam, paste0(row, col))
-                }
+                possibleContam <- append(possibleContam, paste0(row, col))
             }
         }
-    } 
+    }
+    return(possibleContam)
 }
 
 readPlate_worms <- function(file, tofmin=60, tofmax=2000, extmin=0, extmax=10000, SVM=TRUE) {
@@ -335,7 +330,7 @@ meltdf <- function(score){
 }
 
 scoreReport <- function(df, contamination){
-    contamination <- filter(contamination, assay == df$assay[1], plate == df$plate[1])
+    contamination <- filter(contamination, as.character(assay) == as.character(df$assay[1]), as.numeric(as.character(plate)) == as.numeric(as.character(df$plate[1])))
     melted.proc <- meltdf(df)
     filename <- paste0("p", df$plate[1], "_", df$drug[1], "_score.html")
     knit2html("~/SorterDataAssembly/MasterScoreReport2.Rmd", filename)
