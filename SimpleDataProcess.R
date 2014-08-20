@@ -3,6 +3,8 @@ library(dplyr)
 library(kernlab)
 library(knitr)
 
+options(stringsAsFactors = FALSE)
+
 # Source all of the necessary functions
 source("~/SorterDataAssembly/SimpleDataProcessFxns.R")
 
