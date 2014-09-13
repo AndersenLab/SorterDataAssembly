@@ -53,20 +53,26 @@ regress <- function(data, completeData, controls){
                                                                      error = function(err){return(NA)})
                                                         })))
     
+    regressedAssayValues <- data.frame(do.call(cbind, lapply(which(colnames(data)=="n"):ncol(data),
+                                                        function(x){
+                                                            tryCatch({residuals(lm(data[,x] ~ data$assay, na.action=na.exclude))},
+                                                                     error = function(err){return(NA)})
+                                                        })))
     
-    reactValues <- data.frame(do.call(cbind, lapply(which(colnames(data)=="n"):ncol(data),
-                                                    function(x){
-                                                        reactNorms <- data[,x] - controlValues[,which(colnames(controlValues)==colnames(data)[x])]
-                                                        if(length(reactNorms)==0){
-                                                            reactNorms <- NA
-                                                        }
-                                                        return(reactNorms)
-                                                    })))
+    
+#     reactValues <- data.frame(do.call(cbind, lapply(which(colnames(data)=="n"):ncol(data),
+#                                                     function(x){
+#                                                         reactNorms <- data[,x] - controlValues[,which(colnames(controlValues)==colnames(data)[x])]
+#                                                         if(length(reactNorms)==0){
+#                                                             reactNorms <- NA
+#                                                         }
+#                                                         return(reactNorms)
+#                                                     })))
     
     finalDF <- data.frame(data, regressedValues)
     colnames(finalDF)[(which(colnames(finalDF)=="norm.n")+1):ncol(finalDF)] <- paste0("resid.", colnames(finalDF)[which(colnames(finalDF)=="n"):which(colnames(finalDF)=="norm.n")])
-    finalDF <- data.frame(finalDF, reactValues)
-    colnames(finalDF)[(which(colnames(finalDF)=="resid.norm.n")+1):ncol(finalDF)] <- paste0("react.", colnames(finalDF)[which(colnames(finalDF)=="n"):which(colnames(finalDF)=="norm.n")])
+    finalDF <- data.frame(finalDF, regressedAssayValues)
+    colnames(finalDF)[(which(colnames(finalDF)=="resid.norm.n")+1):ncol(finalDF)] <- paste0("resid.a.", colnames(finalDF)[which(colnames(finalDF)=="n"):which(colnames(finalDF)=="norm.n")])
     return(finalDF)
 }
 
