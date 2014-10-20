@@ -97,6 +97,7 @@ readPlate_worms <- function(file, tofmin=60, tofmax=2000, extmin=0, extmax=10000
     plate <- readSorter(file, tofmin, tofmax, extmin, extmax)
     modplate <- with(plate, data.frame(row=Row, col=as.factor(Column), sort=Status.sort, TOF=TOF, EXT=EXT, time=Time.Stamp, green=Green, yellow=Yellow, red=Red))
     modplate <- modplate %>% group_by(row, col) %>% do(extractTime(.))
+    modplate <- data.frame(modplate)
     modplate[,10:13] <- apply(modplate[,c(5, 7:9)], 2, function(x){x/modplate$TOF})
     colnames(modplate)[10:13] <- c("norm.EXT", "norm.green", "norm.yellow", "norm.red")
     if(SVM){
