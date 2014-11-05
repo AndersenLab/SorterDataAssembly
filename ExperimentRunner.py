@@ -20,6 +20,14 @@ if answer == "y" or answer == "yes":
 else:
     generateReports = "FALSE"
 
+string = (colors.PROMPT + "\nDo you have control plates? (y/n): " + colors.DEFAULT)
+answer = raw_input(string)
+
+if answer == "y" or answer == "yes":
+    hasControls = "TRUE"
+else:
+    hasControls = "FALSE"
+
 # Uncomment if running old version of assembly code
 # for i in range(0, len(dirList)):
 #     dirList[i] = relpath(dirList[i], expanduser("~"))
@@ -27,7 +35,7 @@ else:
 directories = " ".join(dirList)
 
 command = " ".join(["Rscript SimpleDataProcess.R", generateReports,
-                    directories])
+                    hasControls, directories])
 
 subprocess.call(command, shell=True)
 

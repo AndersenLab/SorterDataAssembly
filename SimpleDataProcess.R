@@ -14,7 +14,8 @@ options(echo=TRUE)
 # Get the command line arguments for the boolean to generate reports and the string list of directories
 args <- commandArgs(trailingOnly = TRUE)
 generateReports <- as.logical(args[1])
-directories <- args[2:length(args)]
+withControl <- as.logical(args[2])
+directories <- args[3:length(args)]
 
 # Create "reports" directories within each experimental directory
 sapply(directories, function(x){dir.create(file.path(x, "reports"), showWarnings = FALSE)})
@@ -103,14 +104,18 @@ if(generateReports){
     completeData %>% group_by(assay, plate) %>% do(data.frame(scoreReport(., contamination)))
 }
 
-controls <- do.call(rbind, lapply(lapply(directories, function(x){list.files(x, pattern="controls", recursive=TRUE, full.names=TRUE)}),
-                                  function(x){
-                                      source(x)
-                                      assay <- info(x)$assay
-                                      data.frame(assay, control=I(controlPlates), plates=I(testPlates))
-                                  }))
-
-finalData <- completeData %>% group_by(drug) %>% do(regress(., completeData, controls)) %>% arrange(assay)
+if (withControl){
+    controls <- do.call(rbind, lapply(lapply(directories, function(x){list.files(x, pattern="controls", recursive=TRUE, full.names=TRUE)}),
+                                      function(x){
+                                          source(x)
+                                          assay <- info(x)$assay
+                                          data.frame(assay, control=I(controlPlates), plates=I(testPlates))
+                                      }))
+    
+    finalData <- completeData %>% group_by(drug) %>% do(regress(., completeData, controls)) %>% arrange(assay)
+} else {
+    finalData <- completeData
+}
 
 experiment <- info(directories[1], levels=0)$experiment
 round <- info(directories[1], levels=0)$round
