@@ -114,7 +114,7 @@ if (withControl){
     
     finalData <- completeData %>% group_by(drug) %>% do(regress(., completeData, controls)) %>% arrange(assay)
 } else {
-    finalData <- completeData
+    finalData <- completeData %>% group_by(drug) %>% do(regress(., completeData)) %>% arrange(assay)
 }
 
 experiment <- info(directories[1], levels=0)$experiment

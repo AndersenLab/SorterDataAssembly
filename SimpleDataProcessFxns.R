@@ -60,6 +60,7 @@ regress <- function(data, completeData, controls){
                                                         })))
     
     
+    
 #     reactValues <- data.frame(do.call(cbind, lapply(which(colnames(data)=="n"):ncol(data),
 #                                                     function(x){
 #                                                         reactNorms <- data[,x] - controlValues[,which(colnames(controlValues)==colnames(data)[x])]
@@ -75,6 +76,28 @@ regress <- function(data, completeData, controls){
     colnames(finalDF)[(which(colnames(finalDF)=="resid.norm.n")+1):ncol(finalDF)] <- paste0("resid.a.", colnames(finalDF)[which(colnames(finalDF)=="n"):which(colnames(finalDF)=="norm.n")])
     return(finalDF)
 }
+
+
+
+regressAssayValues <- function(data, completeData){
+    plates <- data[!duplicated(data[,c("assay", "plate", "drug")]), c("assay", "plate", "drug")]
+    
+    regressedAssayValues <- data.frame(do.call(cbind, lapply(which(colnames(data)=="n"):ncol(data),
+                                                        function(x){
+                                                            tryCatch({residuals(lm(data[,x] ~ data$assay, na.action=na.exclude))},
+                                                                     error = function(err){return(NA)})
+                                                        })))
+
+    finalDF <- data.frame(finalDF, regressedAssayValues)
+    colnames(finalDF)[(which(colnames(finalDF)=="norm.n")+1):ncol(finalDF)] <- paste0("resid.a.", colnames(finalDF)[which(colnames(finalDF)=="n"):which(colnames(finalDF)=="norm.n")])
+    return(finalDF)
+}
+
+
+
+
+
+
 
 
 possContam <- function(procDataFrame){
