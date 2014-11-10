@@ -68,7 +68,7 @@ colnames(strainsData) <- c("assay", "strains")
 summarizedScoreData <- rawScoreData %>% group_by(date, experiment, round, assay, plate, drug) %>% do(summarizePlate_worms(., strains=eval(strainsData[strainsData$assay==.$assay[1],2])[[1]], quantiles=TRUE))
 
 # Join the number sorted and calculate norm.n, then remove the number sorted 
-completeData <- left_join(summarizedScoreData, select(sortData, assay, plate, row, col, n.sorted.setup = n.sorted)) %>% mutate(norm.n=n/n.sorted.setup) %>% select(-contains("sort"))
+completeData <- left_join(summarizedScoreData, select(sortData, assay, plate, row, col, n.sorted.setup = n.sorted)) %>% mutate(norm.n=n/n.sorted.setup) %>% select(-contains("sort")) %>% as.data.frame(.)
 
 #Read in and handle contamination
 contamFiles <- sapply(unlist(sapply(directories,
@@ -92,7 +92,7 @@ contamination$plate <- sapply(contamination$plate, function(x){as.numeric(strspl
 contamination$contam <- I(sapply(contamination$contam, function(x){eval(parse(text=gsub("- ", "", as.character(x))))}))
 
 #Remove contamination
-completeData <- completeData %>% group_by(assay, plate) %>% do(removeWells(., unlist(contamination[as.character(contamination$assay)==.$assay[1] & as.numeric(as.character(contamination$plate))==as.numeric(.$plate[1]),3])))
+completeData <- completeData %>% group_by(assay, plate) %>% do(removeWells(., unlist(contamination[as.character(contamination$assay)==.$assay[1] & as.numeric(as.character(contamination$plate))==as.numeric(.$plate[1]),3]))) %>% as.data.frame(.)
 
 #NA out wash wells
 completeData[is.na(completeData$strain), which(colnames(completeData)=="n"):ncol(completeData)] <- NA
@@ -114,10 +114,12 @@ if (withControl){
     
     finalData <- completeData %>% group_by(drug) %>% do(regress(., completeData, controls)) %>% arrange(assay)
 } else {
-    finalData <- completeData %>% group_by(drug) %>% do(regress(., completeData)) %>% arrange(assay)
+    finalData <- completeData %>% group_by(drug) %>% do(regressAssayValues(.)) %>% arrange(assay)
 }
 
 experiment <- info(directories[1], levels=0)$experiment
 round <- info(directories[1], levels=0)$round
 
 write.csv(finalData, paste0("~/Dropbox/HTA/Results/ProcessedData/", experiment, round, "_complete_simple.csv"), row.names=FALSE)
+
+write.csv(rawScoreData, paste0("~/Dropbox/HTA/Results/ProcessedData/", experiment, round, "_raw.csv"), row.names=FALSE)

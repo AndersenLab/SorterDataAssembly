@@ -36,6 +36,8 @@ procSetup <- function(file, tofmin=0, tofmax=2000, extmin=20, extmax=5000) {
 }
 
 regress <- function(data, completeData, controls){
+    data <- as.data.frame(data)
+    completeData <- as.data.frame(completeData)
     plates <- data[!duplicated(data[,c("assay", "plate", "drug")]), c("assay", "plate", "drug")]
     controlValues <- plates %>%
         group_by(assay, plate, drug) %>%
@@ -44,7 +46,7 @@ regress <- function(data, completeData, controls){
                                        as.numeric(plate) %in% as.numeric(unlist(controls[sapply(controls$plates,
                                                                                                 function(x){as.numeric(.$plate[1]) %in% as.numeric(x)}) & controls$assay==.$assay[1], "control"])))) %>%
                          group_by(row, col) %>%
-                         summarise_each(funs(mean(., na.rm=TRUE)), -date, -experiment, -round, -assay, -plate, -drug)},
+                         summarise_each(funs(mean(., na.rm=TRUE)), -date, -experiment, -round, -assay, -plate, -drug) %>% data.frame()},
                     error = function(err){return(data.frame(matrix(nrow=96)))}))
     
     regressedValues <- data.frame(do.call(cbind, lapply(which(colnames(data)=="n"):ncol(data),
@@ -79,7 +81,8 @@ regress <- function(data, completeData, controls){
 
 
 
-regressAssayValues <- function(data, completeData){
+regressAssayValues <- function(data){
+    data <- as.data.frame(data)
     plates <- data[!duplicated(data[,c("assay", "plate", "drug")]), c("assay", "plate", "drug")]
     
     regressedAssayValues <- data.frame(do.call(cbind, lapply(which(colnames(data)=="n"):ncol(data),
@@ -88,7 +91,7 @@ regressAssayValues <- function(data, completeData){
                                                                      error = function(err){return(NA)})
                                                         })))
 
-    finalDF <- data.frame(finalDF, regressedAssayValues)
+    finalDF <- data.frame(data, regressedAssayValues)
     colnames(finalDF)[(which(colnames(finalDF)=="norm.n")+1):ncol(finalDF)] <- paste0("resid.a.", colnames(finalDF)[which(colnames(finalDF)=="n"):which(colnames(finalDF)=="norm.n")])
     return(finalDF)
 }
