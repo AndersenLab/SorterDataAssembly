@@ -35,7 +35,7 @@ nrow(df[as.numeric(as.numeric(df$col)) %% 2 == 1 & is.na(df$n),])
 
 NA Strains:
 ```{r echo=FALSE, warning=FALSE}
-df[as.numeric(as.numeric(df$col)) %% 2 == 1 & is.na(df$n),"strain"]
+as.vector(df[as.numeric(as.numeric(df$col)) %% 2 == 1 & is.na(df$n),"strain"])
 ```
 
 

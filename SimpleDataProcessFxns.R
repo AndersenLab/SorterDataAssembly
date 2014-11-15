@@ -368,6 +368,8 @@ meltdf <- function(score){
 }
 
 scoreReport <- function(df, contamination){
+    df <- as.data.frame(df)
+    df <- transform(df, col=factor(col,levels=c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12")))
     contamination <- as.data.frame(contamination)
     melted.proc <- meltdf(df)
     filename <- paste0("p", df$plate[1], "_", df$drug[1], "_score.html")
