@@ -17,7 +17,7 @@ strains=df$strain
 
 Contaminated wells:
 ```{r echo=FALSE, warning=FALSE}
-unlist(contamination[as.character(contamination$assay)==as.character(df$assay[1]) & as.numeric(contamination$plate)==as.numeric(df$plate[1]), "contam"])
+contamination[as.character(contamination$assay) == as.character(df$assay[1]) & as.numeric(as.character(contamination$plate)) == as.numeric(as.character(df$plate[1])), 3]
 ```
 
 

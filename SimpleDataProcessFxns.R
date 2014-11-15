@@ -368,7 +368,7 @@ meltdf <- function(score){
 }
 
 scoreReport <- function(df, contamination){
-    contamination <- filter(contamination, as.character(assay) == as.character(df$assay[1]), as.numeric(as.character(plate)) == as.numeric(as.character(df$plate[1])))
+    contamination <- as.data.frame(contamination)
     melted.proc <- meltdf(df)
     filename <- paste0("p", df$plate[1], "_", df$drug[1], "_score.html")
     knit2html("~/SorterDataAssembly/MasterScoreReport2.Rmd", filename)
