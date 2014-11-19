@@ -52,13 +52,13 @@ regress <- function(data, completeData, controls){
     regressedValues <- data.frame(do.call(cbind, lapply(which(colnames(data)=="n"):ncol(data),
                                                         function(x){
                                                             tryCatch({residuals(lm(data[,x] ~ data$assay + controlValues[,which(colnames(controlValues)==colnames(data)[x])], na.action=na.exclude))},
-                                                                     error = function(err){return(NA)})
+                                                                     error = function(err){print(err);return(NA)})
                                                         })))
     
     regressedAssayValues <- data.frame(do.call(cbind, lapply(which(colnames(data)=="n"):ncol(data),
                                                         function(x){
                                                             tryCatch({residuals(lm(data[,x] ~ data$assay, na.action=na.exclude))},
-                                                                     error = function(err){return(NA)})
+                                                                     error = function(err){print(err);return(NA)})
                                                         })))
     
     
