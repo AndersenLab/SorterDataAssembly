@@ -49,6 +49,8 @@ regress <- function(data, completeData, controls){
                          summarise_each(funs(mean(., na.rm=TRUE)), -date, -experiment, -round, -assay, -plate, -drug) %>% data.frame()},
                     error = function(err){return(data.frame(matrix(nrow=96)))}))
     
+    controlValues <- as.data.frame(controlValues)
+    
     regressedValues <- data.frame(do.call(cbind, lapply(which(colnames(data)=="n"):ncol(data),
                                                         function(x){
                                                             tryCatch({residuals(lm(data[,x] ~ data$assay + controlValues[,which(colnames(controlValues)==colnames(data)[x])], na.action=na.exclude))},
