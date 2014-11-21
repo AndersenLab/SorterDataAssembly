@@ -40,8 +40,8 @@ regress <- function(data, completeData, controls){
     completeData <- as.data.frame(completeData)
     plates <- data[!duplicated(data[,c("assay", "plate", "drug")]), c("assay", "plate", "drug")]
     plates$plate <- as.numeric(plates$plate)
-    plates$control <- unlist(sapply(1:nrow(plates), function(x){controls[plates$assay[x]==controls$assay & plates$plate[x]==controls$plate, 2]}))
-    controlValues <- data.frame(do.call(rbind, lapply(1:nrow(plates), function(x){tryCatch({data.frame(filter(completeData, assay==as.character(plates$assay[x]), as.numeric(plate)==plates$control[x]))}, error = function(err){return(data.frame(matrix(nrow=96)))})})))
+    plates$control <- sapply(1:nrow(plates), function(x){unlist(filter(controls, plates$assay[x]==assay & plates$plate[x]==plate) %>% select(control))})
+    controlValues <- data.frame(do.call(rbind, lapply(1:nrow(plates), function(x){tryCatch({data.frame(filter(completeData, assay==as.character(plates$assay[x]), as.numeric(plate)==plates$control[x]) %>% group_by(row, col) %>% summarize_each(funs(mean)))}, error = function(err){return(data.frame(matrix(nrow=96)))})})))
     
     regressedValues <- data.frame(do.call(cbind, lapply(which(colnames(data)=="n"):ncol(data),
                                                         function(x){
