@@ -39,28 +39,20 @@ regress <- function(data, completeData, controls){
     data <- as.data.frame(data)
     completeData <- as.data.frame(completeData)
     plates <- data[!duplicated(data[,c("assay", "plate", "drug")]), c("assay", "plate", "drug")]
-    controlValues <- plates %>%
-        group_by(assay, plate, drug) %>%
-        do(tryCatch({data.frame(filter(completeData,
-                                       assay==as.character(.$assay[1]),
-                                       as.numeric(plate) %in% as.numeric(unlist(controls[sapply(controls$plates,
-                                                                                                function(x){as.numeric(.$plate[1]) %in% as.numeric(x)}) & controls$assay==.$assay[1], "control"])))) %>%
-                         group_by(row, col) %>%
-                         summarise_each(funs(mean(., na.rm=TRUE)), -date, -experiment, -round, -assay, -plate, -drug) %>% data.frame()},
-                    error = function(err){return(data.frame(matrix(nrow=96)))}))
-    
-    controlValues <- as.data.frame(controlValues)
+    plates$plate <- as.numeric(plates$plate)
+    plates$control <- unlist(sapply(1:nrow(plates), function(x){controls[plates$assay[x]==controls$assay & plates$plate[x]==controls$plate, 2]}))
+    controlValues <- data.frame(do.call(rbind, lapply(1:nrow(plates), function(x){tryCatch({data.frame(filter(completeData, assay==as.character(plates$assay[x]), as.numeric(plate)==plates$control[x]))}, error = function(err){return(data.frame(matrix(nrow=96)))})})))
     
     regressedValues <- data.frame(do.call(cbind, lapply(which(colnames(data)=="n"):ncol(data),
                                                         function(x){
                                                             tryCatch({residuals(lm(data[,x] ~ data$assay + controlValues[,which(colnames(controlValues)==colnames(data)[x])], na.action=na.exclude))},
-                                                                     error = function(err){print(err);return(NA)})
+                                                                     error = function(err){return(NA)})
                                                         })))
     
     regressedAssayValues <- data.frame(do.call(cbind, lapply(which(colnames(data)=="n"):ncol(data),
                                                         function(x){
                                                             tryCatch({residuals(lm(data[,x] ~ data$assay, na.action=na.exclude))},
-                                                                     error = function(err){print(err);return(NA)})
+                                                                     error = function(err){return(NA)})
                                                         })))
     
     

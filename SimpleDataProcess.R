@@ -111,10 +111,12 @@ if (withControl){
                                           assay <- info(x)$assay
                                           data.frame(assay, control=I(controlPlates), plates=I(testPlates))
                                       }))
+    controls <- data.frame(do.call(rbind, sapply(1:nrow(controls), function(x){cbind(controls[x,1], controls[x,2], unlist(controls[x,3]))})))
+    colnames(controls) <- c("assay", "control", "plate")
     
-    finalData <- completeData %>% group_by(drug) %>% do(regress(., completeData, controls)) %>% arrange(assay)
+    finalData <- completeData %>% group_by(drug) %>% do(regress(., completeData, controls)) %>% mutate(assay=as.character(assay), plate=as.numeric(plate), row=as.character(row), col=as.numeric(col)) %>% data.frame() %>% arrange(assay, plate, row, col)
 } else {
-    finalData <- completeData %>% group_by(drug) %>% do(regressAssayValues(.)) %>% arrange(assay)
+    finalData <- completeData %>% group_by(drug) %>% do(regressAssayValues(.)) %>% data.frame() %>% arrange(assay, plate, row, col)
 }
 
 experiment <- info(directories[1], levels=0)$experiment
