@@ -41,7 +41,18 @@ regress <- function(data, completeData, controls){
     plates <- data[!duplicated(data[,c("assay", "plate", "drug")]), c("assay", "plate", "drug")]
     plates$plate <- as.numeric(plates$plate)
     plates$control <- sapply(1:nrow(plates), function(x){unlist(filter(controls, plates$assay[x]==assay & plates$plate[x]==plate) %>% select(control))})
-    controlValues <- data.frame(do.call(rbind, lapply(1:nrow(plates), function(x){tryCatch({data.frame(filter(completeData, assay==as.character(plates$assay[x]), as.numeric(plate)==plates$control[x]) %>% group_by(row, col) %>% summarize_each(funs(mean)))}, error = function(err){return(data.frame(matrix(nrow=96)))})})))
+    completeData$row <- as.character(completeData$row)
+    completeData$col <- as.numeric(as.character(completeData$col))
+    
+   controlValues <- data.frame(rbind_all(lapply(1:nrow(plates),
+                            function(x){tryCatch({
+                                            ifelse(plates$control[x]==0, 
+                                                   return(data.frame(matrix(nrow=96, ncol=ncol(completeData)))),
+                                                   return(data.frame(filter(completeData, assay==as.character(plates$assay[x]), as.numeric(plate) %in% unlist(plates$control[x])) %>% group_by(row, col) %>% summarise_each(funs(mean(., na.rm=TRUE))) %>% data.frame() %>% arrange(row, col))))},
+                                            error = function(err){return(data.frame(matrix(nrow=96, ncol=ncol(completeData))))})})))[1:ncol(completeData)]
+    
+    
+#     controlValues <- data.frame(do.call(rbind, lapply(1:nrow(plates), function(x){print(x);ifelse(plates$control[x]==0, print("Yes"), print("No"));tryCatch({ifelse(plates$control[x]==0, data.frame(filter(completeData, assay==as.character(plates$assay[x]), as.numeric(plate) %in% unlist(plates$control[x])) %>% group_by(row, col) %>% summarise_each(funs(mean(., na.rm=TRUE))) %>% data.frame() %>% arrange(row, col)), data.frame(matrix(nrow=96)))}, error = function(err){print(err);return(data.frame(matrix(nrow=96)))})})))
     
     regressedValues <- data.frame(do.call(cbind, lapply(which(colnames(data)=="n"):ncol(data),
                                                         function(x){
