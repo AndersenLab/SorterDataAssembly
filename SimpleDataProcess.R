@@ -111,7 +111,7 @@ if (withControl){
                                           assay <- info(x)$assay
                                           data.frame(assay, control=I(controlPlates), plates=I(testPlates))
                                       }))
-    controls <- data.frame(do.call(rbind, sapply(1:nrow(controls), function(x){cbind(controls[x,1], controls[x,2], unlist(controls[x,3]))})))
+    controls <- data.frame(do.call(rbind, lapply(1:nrow(controls), function(x){cbind(controls[x,1], controls[x,2], unlist(controls[x,3]))})))
     colnames(controls) <- c("assay", "control", "plate")
     
     finalData <- completeData %>% group_by(drug) %>% do(regress(., completeData, controls))
