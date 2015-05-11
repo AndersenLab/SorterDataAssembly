@@ -9,3 +9,4 @@ contamination.R
 .DS_Store
 .Rapp.history
 PlateStitcher.pyc
+packrat/lib*/
