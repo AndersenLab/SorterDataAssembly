@@ -3,6 +3,7 @@ setup/
 results/
 reports/
 temp/
+figure/
 
 strains.R
 contamination.R
