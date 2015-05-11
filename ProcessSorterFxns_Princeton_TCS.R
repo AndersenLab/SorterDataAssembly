@@ -86,12 +86,18 @@ possContam <- function(procDataFrame){
 
 
 summarizePlate_worms <- function(plate, strains=NULL, quantiles=FALSE, log=FALSE, ends=FALSE) {
+<<<<<<< HEAD
     plate$row = as.character(plate$row)
     plate$col = as.numeric(plate$col)
     plate <- plate[plate$call50=="object" | plate$TOF == -1 | is.na(plate$call50),]
     plate <- fillWells(plate)
     processed <- plate %>% group_by(row, col) %>% summarise(n=ifelse(length(TOF[!is.na(TOF)])==0, NA, length(TOF[!is.na(TOF)])),
                                                             n.sorted=sum(sort==6),
+=======
+    plate <- plate[as.character(plate$call50)=="object" | plate$TOF==-1 | is.na(as.character(plate$call50)),]
+    plate <- fillWells(plate)
+    processed <- plate %>% group_by(row, col) %>% summarise(n=ifelse(length(TOF[!is.na(TOF)])==0, NA, length(TOF[!is.na(TOF)])),
+>>>>>>> 13ae2d9c99182929973f0d22076a123484549190
                                                             
                                                             mean.TOF=mean(TOF, na.rm=TRUE),
                                                             min.TOF=as.numeric(quantile(TOF, na.rm=TRUE)[1]),
@@ -121,6 +127,7 @@ summarizePlate_worms <- function(plate, strains=NULL, quantiles=FALSE, log=FALSE
                                                             max.red=as.numeric(quantile(red, na.rm=TRUE)[5]),
                                                             
                                                             mean.green=mean(green, na.rm=TRUE),
+<<<<<<< HEAD
                                                             min.green=as.numeric(quantile(green, na.rm=TRUE)[1]),
                                                             q10.green=as.numeric(quantile(green, probs=0.1, na.rm=TRUE)[1]),
                                                             q25.green=as.numeric(quantile(green, probs=0.25, na.rm=TRUE)[1]),
@@ -137,6 +144,12 @@ summarizePlate_worms <- function(plate, strains=NULL, quantiles=FALSE, log=FALSE
                                                             q75.yellow=as.numeric(quantile(yellow, probs=0.75, na.rm=TRUE)[1]),
                                                             q90.yellow=as.numeric(quantile(yellow, probs=0.9, na.rm=TRUE)[1]),
                                                             max.yellow=as.numeric(quantile(yellow, na.rm=TRUE)[5]),
+=======
+                                                            median.green=median(green, na.rm=TRUE),
+                                                            
+                                                            mean.yellow=mean(yellow, na.rm=TRUE),
+                                                            median.yellow=median(yellow, na.rm=TRUE),
+>>>>>>> 13ae2d9c99182929973f0d22076a123484549190
                                                             
                                                             mean.norm.EXT=mean(norm.EXT, na.rm=TRUE),
                                                             min.norm.EXT=as.numeric(quantile(norm.EXT, na.rm=TRUE)[1]),
@@ -157,6 +170,7 @@ summarizePlate_worms <- function(plate, strains=NULL, quantiles=FALSE, log=FALSE
                                                             max.norm.red=as.numeric(quantile(norm.red, na.rm=TRUE)[5]),
                                                             
                                                             mean.norm.green=mean(norm.green, na.rm=TRUE),
+<<<<<<< HEAD
                                                             min.norm.green=as.numeric(quantile(norm.green, na.rm=TRUE)[1]),
                                                             q10.norm.green=as.numeric(quantile(norm.green, probs=0.1, na.rm=TRUE)[1]),
                                                             q25.norm.green=as.numeric(quantile(norm.green, probs=0.25, na.rm=TRUE)[1]),
@@ -245,6 +259,28 @@ summarizePlate_worms <- function(plate, strains=NULL, quantiles=FALSE, log=FALSE
                                                             q75.log.norm.yellow=as.numeric(quantile(log(norm.yellow), probs=0.75, na.rm=TRUE)[1]),
                                                             q90.log.norm.yellow=as.numeric(quantile(log(norm.yellow), probs=0.90, na.rm=TRUE)[1]),
                                                             max.log.norm.yellow=as.numeric(quantile(log(norm.yellow), na.rm=TRUE)[5]),
+=======
+                                                            median.norm.green=median(norm.green, na.rm=TRUE),
+                                                            
+                                                            mean.norm.yellow=mean(norm.yellow, na.rm=TRUE),
+                                                            median.norm.yellow=median(norm.yellow, na.rm=TRUE),
+                                                            
+                                                            mean.log.EXT=mean(log(EXT)[!is.infinite(log(EXT))], na.rm=TRUE),
+                                                            
+                                                            mean.log.red=mean(log(red)[!is.infinite(log(red))], na.rm=TRUE),
+                                                            
+                                                            mean.log.green=mean(log(green)[!is.infinite(log(green))], na.rm=TRUE),
+                                                            
+                                                            mean.log.yellow=mean(log(yellow)[!is.infinite(log(yellow))], na.rm=TRUE),
+                                                            
+                                                            mean.log.norm.EXT=mean(log(norm.EXT)[!is.infinite(log(norm.EXT))], na.rm=TRUE),
+                                                            
+                                                            mean.log.norm.red=mean(log(norm.red)[!is.infinite(log(norm.red))], na.rm=TRUE),
+                                                            
+                                                            mean.log.norm.green=mean(log(norm.green)[!is.infinite(log(norm.green))], na.rm=TRUE),
+                                                            
+                                                            mean.log.norm.yellow=mean(log(norm.yellow)[!is.infinite(log(norm.yellow))], na.rm=TRUE),
+>>>>>>> 13ae2d9c99182929973f0d22076a123484549190
                                                             
                                                             f.L1 = length(which(stage == "L1"))/length(stage),
                                                             f.L2L3 = length(which(stage == "L2/L3"))/length(stage),
@@ -269,7 +305,11 @@ summarizePlate_worms <- function(plate, strains=NULL, quantiles=FALSE, log=FALSE
         analysis <- analysis[order(analysis$strain),]
         analysis <- analysis[order(analysis$row, analysis$col),]
     }
+<<<<<<< HEAD
     analysis[analysis$mean.TOF==-1 | is.na(analysis$mean.TOF),which(colnames(analysis)=="n"):ncol(analysis)] <- NA
+=======
+    analysis[which(analysis$mean.TOF==-1) | which(is.na(analysis$mean.TOF)),which(colnames(analysis)=="n"):ncol(analysis)] <- NA
+>>>>>>> 13ae2d9c99182929973f0d22076a123484549190
     return(analysis)
 }
 

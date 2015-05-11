@@ -6,10 +6,17 @@ require(stringr)
 require(markdown)
 require(knitr)
 require(ggplot2)
+<<<<<<< HEAD
 require(reshape2)
 require(dplyr)
 require(COPASutils)
 makeReports <- FALSE
+=======
+require(reshape)
+require(dplyr)
+require(COPASutils)
+makeReports <- TRUE
+>>>>>>> 13ae2d9c99182929973f0d22076a123484549190
 dataDirs <- c("Dropbox/HTA/Results/20110811_RIAILs0a", "Dropbox/HTA/Results/20110812_RIAILs0b", "Dropbox/HTA/Results/20110818_RIAILs0c", "Dropbox/HTA/Results/20110819_RIAILs0d")
 
 
@@ -83,9 +90,15 @@ for(dir in seq(1,length(dataDirs))){
     strains.ctrl <- load(file.path(dir.root,dir.data,file.strains.ctrl))
     strains.pq <- load(file.path(dir.root,dir.data,file.strains.pq))
     
+<<<<<<< HEAD
 #     #Arrange the strain data into plate format
 #     strains.ctrl<-matrix(strains.ctrl,nrow=8,ncol=12,byrow=TRUE)
 #     strains.pq<-matrix(strains.pq,nrow=8,ncol=12,byrow=TRUE)
+=======
+    #Arrange the strain data into plate format
+    strains.ctrl<-matrix(strains.ctrl,nrow=8,ncol=12,byrow=TRUE)
+    strains.pq<-matrix(strains.pq,nrow=8,ncol=12,byrow=TRUE)
+>>>>>>> 13ae2d9c99182929973f0d22076a123484549190
     
     #Change working directory to the setup data folder
     setwd(file.path(dir.root,dir.data,dir.setup))
@@ -223,11 +236,18 @@ for(dir in seq(1,length(dataDirs))){
     score.pheno = list()
 
     for(i in 1:length(score.modplate)){
+<<<<<<< HEAD
         print(i)
         if(grepl("control", score.filelist[[i]][1])){
             strains = controlStrains[[ctrlPlate]]
 #             strains<-matrix(strains,nrow=8,ncol=12,byrow=TRUE)
             plate = summarizePlate_worms(score.modplate[[i]], strains, quantiles=TRUE, log=TRUE)
+=======
+        if(grepl("control", score.filelist[[i]][1])){
+            strains = controlStrains[[ctrlPlate]]
+            strains<-matrix(strains,nrow=8,ncol=12,byrow=TRUE)
+            plate = summarizePlate_worms(score.modplate[[i]], t(strains), quantiles=TRUE, log=TRUE)
+>>>>>>> 13ae2d9c99182929973f0d22076a123484549190
             score.pheno = append(score.pheno, list(plate))
             ctrlPlate = ctrlPlate + 1
         } else if(grepl("paraquat", score.filelist[[i]][1])){
@@ -455,7 +475,12 @@ for(dir in seq(1,length(dataDirs))){
         colnames(controlData[[j]]) = columnNames
     }
     for(j in testPlates){
+<<<<<<< HEAD
         controlData[[j]] = controlPlate
+=======
+        controlData[[j]] = 
+        test = as.data.frame(do.call(rbind,lapply(as.character(data[data$plate == j, which(colnames(data) == "strain")]), function(x){x})))#{controlPlate[as.character(controlPlate$strain) == as.character(x),]})))
+>>>>>>> 13ae2d9c99182929973f0d22076a123484549190
         colnames(controlData[[j]]) = columnNames
     }
     contData = append(contData, controlData)
@@ -479,7 +504,12 @@ for(i in unique(plateData$drug)){
     control = controlsData[plateData$drug == i,]
     for(j in startCol:ncol(plate)){
         residuals = tryCatch({residuals(lm(plate[,j]~plate$assay+plate$plate+control[,j], na.action = na.exclude))},
+<<<<<<< HEAD
                                                             error = function(err){return(rep(NA, nrow(plate)))})
+=======
+                             error = function(err){tryCatch({residuals(lm(plate[,j]~plate$platecontrol[,j], na.action = na.exclude))},
+                                                            error = function(err){return(rep(NA, nrow(plate)))})})
+>>>>>>> 13ae2d9c99182929973f0d22076a123484549190
         plate = as.data.frame(cbind(plate, residuals))
         colnames(plate)[ncol(plate)] = paste0("resid.", colnames(plate)[j])
     }
